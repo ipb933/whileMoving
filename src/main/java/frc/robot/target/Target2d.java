@@ -65,7 +65,14 @@ public class Target2d extends SubsystemBase{
     }
 
     public double distanceFromHubAfterTime(double sec){
-        return TargetConstants.hubPos.getDistance(chassis.computeFuturePosition(sec).getTranslation());
+        double fieldRotation = angleFromHubAfterTime(sec) + chassis.computeFuturePosition(sec).getRotation().getRadians();
+        return TargetConstants.hubPos.getDistance(
+            chassis.computeFuturePosition(sec).getTranslation()
+                .plus(new Translation2d(
+                    TargetConstants.SHOOTER_DIST_FROM_CENTER*Math.cos(fieldRotation),
+                    TargetConstants.SHOOTER_DIST_FROM_CENTER*Math.sin(fieldRotation)
+                ))
+            );
     }
 
     public double angleFromHubAfterTime(double sec){
@@ -80,7 +87,10 @@ public class Target2d extends SubsystemBase{
         baseShooterSpeed = baseShooterSpeedSupplier.getAsDouble();
         baseShooterRotation = baseShooterRotationSupplier.getAsDouble();
 
-        Rotation2d endRotation = new Rotation2d(baseShooterRotation + chassis.getPose().getRotation().getRadians());
+        Rotation2d endRotation = new Rotation2d(baseShooterRotation
+         + (chassis.computeFuturePosition(rotationTimes.isEmpty() ? TargetConstants.ROTATION_TIME
+            : TargetConstants.ROTATION_TIME - rotationTimes.peek().get()
+        ).getRotation().getRadians()));
         Translation2d endValues = new Translation2d(
             baseShooterSpeed, 
             endRotation
@@ -92,7 +102,7 @@ public class Target2d extends SubsystemBase{
             speeds.vyMetersPerSecond
         );
         Translation2d tangentialVelocity = new Translation2d(
-            speeds.omegaRadiansPerSecond*Math.sin(endRotation.getRadians())*TargetConstants.SHOOTER_DIST_FROM_CENTER, 
+            -speeds.omegaRadiansPerSecond*Math.sin(endRotation.getRadians())*TargetConstants.SHOOTER_DIST_FROM_CENTER, 
             speeds.omegaRadiansPerSecond*Math.cos(endRotation.getRadians())*TargetConstants.SHOOTER_DIST_FROM_CENTER
         );
         chassisSpeed = chassisSpeed.plus(tangentialVelocity);
