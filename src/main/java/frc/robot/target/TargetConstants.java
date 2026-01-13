@@ -14,4 +14,5 @@ public final class TargetConstants {
   public static final double MOTOR_VEL_TO_BALL_VEL = 1; //TODO
 
   public static final double SHOOTER_DIST_FROM_CENTER = 0; //TODO
+  public static final double SHOOTER_ANGLE_FROM_CENTER = 0; //TODO
 }
