@@ -118,39 +118,6 @@ public class Target2d extends SubsystemBase{
             shooterValues.getNorm() / TargetConstants.MOTOR_VEL_TO_BALL_VEL, //velocity
             shooterValues.getAngle().getRadians() - chassis.getPose().getRotation().getRadians() //rotation
         };
-
-        // baseShooterSpeed = baseShooterSpeedSupplier.getAsDouble();
-        // baseShooterRotation = baseShooterRotationSupplier.getAsDouble();
-
-        // // 1. חישוב פוז עתידי פעם אחת לייעול
-        // Pose2d futurePose = chassis.computeFuturePosition(
-        //     rotationTimes.isEmpty() ? TargetConstants.ROTATION_TIME : TargetConstants.ROTATION_TIME - rotationTimes.peek().get()
-        // );
-
-        // // 2. חישוב זווית ירי סופית (לאן הצריח מסתכל)
-        // Rotation2d endRotation = new Rotation2d(baseShooterRotation + futurePose.getRotation().getRadians());
-        
-        // // 3. חישוב זווית המיקום הפיזי (איפה הצריח יושב) - עבור המהירות המשיקית
-        // double physicalMountingAngle = TargetConstants.SHOOTER_ANGLE_FROM_CENTER + futurePose.getRotation().getRadians();
-
-        // Translation2d endValues = new Translation2d(baseShooterSpeed, endRotation);
-        
-        // ChassisSpeeds speeds = chassis.getChassisSpeedsFieldRel();
-        // Translation2d chassisSpeed = new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-        
-        // // התיקון הקריטי: המהירות המשיקית תלויה במיקום הפיזי (Mounting Angle), לא בזווית הירי (End Rotation)
-        // Translation2d tangentialVelocity = new Translation2d(
-        //     -speeds.omegaRadiansPerSecond * Math.sin(physicalMountingAngle) * TargetConstants.SHOOTER_DIST_FROM_CENTER, 
-        //     speeds.omegaRadiansPerSecond * Math.cos(physicalMountingAngle) * TargetConstants.SHOOTER_DIST_FROM_CENTER
-        // );
-        
-        // chassisSpeed = chassisSpeed.plus(tangentialVelocity);
-        // Translation2d shooterValues = endValues.minus(chassisSpeed);
-
-        // return new double[] {
-        //     shooterValues.getNorm() / TargetConstants.MOTOR_VEL_TO_BALL_VEL, 
-        //     shooterValues.getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
-        // };
     }
 
     public void periodic(){
