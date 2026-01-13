@@ -11,7 +11,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.demacia.utils.DemaciaUtils;
+import frc.demacia.utils.chassis.Chassis;
+import frc.demacia.utils.chassis.DriveCommand;
+import frc.demacia.utils.controller.CommandController;
+import frc.demacia.utils.controller.CommandController.ControllerType;
 import frc.demacia.utils.log.LogManager;
+import frc.robot.chassis.ChassisConstants;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -26,7 +31,9 @@ public class RobotContainer implements Sendable{
   public static boolean isRed = false;
 
   // The robot's subsystems and commands are defined here...
-
+  
+  public static CommandController driverController;
+  Chassis chassis;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
 
@@ -34,6 +41,9 @@ public class RobotContainer implements Sendable{
   public RobotContainer() {
     SmartDashboard.putData("RC", this);
     new DemaciaUtils(() -> getIsComp(), () -> getIsRed());
+
+    driverController = new CommandController(0, ControllerType.kPS5);
+    this.chassis = new Chassis(ChassisConstants.CHASSIS_CONFIG);
     
     // Configure the trigger bindings
     configureBindings();
@@ -49,7 +59,7 @@ public class RobotContainer implements Sendable{
    * joysticks}.
    */
   private void configureBindings() {
-    
+    chassis.setDefaultCommand(new DriveCommand(chassis, driverController));
   }
 
   public static boolean getIsRed() {
