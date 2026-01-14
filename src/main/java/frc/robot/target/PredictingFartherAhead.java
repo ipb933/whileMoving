@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.demacia.utils.LookUpTable;
 import frc.demacia.utils.chassis.Chassis;
 
-public class Target2d extends SubsystemBase{
+public class PredictingFartherAhead extends SubsystemBase{
 
     // timer list to know befor how much time every fuel (ball) was in the sensor' used to set velocity
     ArrayDeque<Timer> velocityTimes;
@@ -41,7 +41,7 @@ public class Target2d extends SubsystemBase{
     // the chassis speed not in the shooter angle (right/left)
     double chassisTangentialSpeed;
 
-    public Target2d(Chassis chassis, LookUpTable lookUpTable, BooleanSupplier isFuel){
+    public PredictingFartherAhead(Chassis chassis, LookUpTable lookUpTable, BooleanSupplier isFuel){
         this.chassis = chassis;
         this.lookUpTable = lookUpTable;
         this.isFuel = isFuel;
