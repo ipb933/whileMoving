@@ -19,14 +19,6 @@ public class LogReader {
     private static Map<Integer,List<EntryDescription>> entries = new HashMap<>();
     private static double minPowerToMove = Double.MAX_VALUE;
 
-    public enum MechanismType {
-        POSITION,
-        VELOCITY,
-        ELEVATOR,
-        ARM,
-        FLYWHEEL
-    }
-
     private static class EntryDescription {
         String name;
         String type;
@@ -72,15 +64,15 @@ public class LogReader {
         }
     }
 
-    public static Map<String, SysIDResults> analyze(MechanismType type) {
+    public static Map<String, SysIDResults> analyze() {
         if (entries == null || entries.isEmpty()) return new HashMap<>();
-        System.out.println("Analyzing as " + type);
-        return performAnalysis(type);
+        System.out.println("Analyzing");
+        return performAnalysis();
     }
 
     public static Map<String, SysIDResults> getResult(String fileName) {
         loadFile(fileName);
-        return analyze(MechanismType.POSITION);
+        return analyze();
     }
 
     private static void wpilogReader(String fileName) throws IOException {
@@ -256,12 +248,12 @@ public class LogReader {
         return result;
     }
 
-    private static Map<String, SysIDResults> performAnalysis(MechanismType type) {
+    private static Map<String, SysIDResults> performAnalysis() {
         Map<String, SysIDResults> results = new HashMap<>();
         Set<String> groups = findGroups();
         
         for (String group : groups) {
-            SysIDResults result = analyzeGroup(group, type);
+            SysIDResults result = analyzeGroup(group);
             if (result != null) {
                 results.put(group, result);
             }
@@ -279,7 +271,7 @@ public class LogReader {
         return groups;
     }
 
-    private static SysIDResults analyzeGroup(String name, MechanismType type) {
+    private static SysIDResults analyzeGroup(String name) {
         List<DataPoint> allData = new ArrayList<>();
 
         for (List<EntryDescription> list : entries.values()) {
@@ -297,7 +289,7 @@ public class LogReader {
         allData.sort((p1, p2) -> Long.compare(p1.timestamp, p2.timestamp));
 
         List<SyncedDataPoint> syncedData = synchronizeData(allData);
-        return performSysIdLikeAnalysis(syncedData, type);
+        return performSysIdLikeAnalysis(syncedData);
     }
 
     public static class SyncedDataPoint {
@@ -384,7 +376,7 @@ public class LogReader {
         }
     }
 
-    private static SysIDResults performSysIdLikeAnalysis(List<SyncedDataPoint> data, MechanismType type) {
+    private static SysIDResults performSysIdLikeAnalysis(List<SyncedDataPoint> data) {
         if (data.isEmpty()) return new SysIDResults(null);
 
         List<SyncedDataPoint> validData = new ArrayList<>();
@@ -396,137 +388,26 @@ public class LogReader {
             }
         }
 
-        List<SyncedDataPoint> slowData = new ArrayList<>();
-        List<SyncedDataPoint> fastData = new ArrayList<>();
-        
-        double slowThresh = maxV * 0.3;
-        double fastThresh = maxV * 0.7;
+        BucketResult Result = solveBucket(validData);
 
-        for (SyncedDataPoint d : validData) {
-            double vAbs = Math.abs(d.velocity);
-            if (vAbs < slowThresh) {
-                slowData.add(d);
-            }
-            if (vAbs > fastThresh) {
-                fastData.add(d);
-            }
-        }
-
-        BucketResult ksResult = solveBucket(slowData, type, -1, null, false);
-        double foundKs = (ksResult != null) ? ksResult.ks : 0.0;
-
-        boolean useKv2 = (type == MechanismType.FLYWHEEL);
-        BucketResult allDataResult = solveBucket(validData, type, foundKs, fastData, useKv2);
-
-        return new SysIDResults(allDataResult);
+        return new SysIDResults(Result);
     }
 
-    private static double measureObservedKvRANSAC(List<SyncedDataPoint> data, double knownKs, double knownKv2, double knownKg, MechanismType type) {
-        if (data.isEmpty()) return 0;
-
-        List<SyncedDataPoint> steadyStateCandidates = new ArrayList<>();
-        for (SyncedDataPoint p : data) {
-            if (Math.abs(p.velocity) > 0.1 && Math.abs(p.acceleration) < 1.0) {
-                steadyStateCandidates.add(p);
-            }
-        }
-
-        if (steadyStateCandidates.size() < 10) return 0;
-
-        int iterations = 100;
-        double bestKv = 0;
-        int maxInliers = -1;
-        double voltageThreshold = 0.25;
-
-        for (int i = 0; i < iterations; i++) {
-            SyncedDataPoint randomPoint = steadyStateCandidates.get((int) (Math.random() * steadyStateCandidates.size()));
-            
-            double sign = Math.signum(randomPoint.velocity);
-            double friction = knownKs * sign;
-            double drag = knownKv2 * randomPoint.velocity * Math.abs(randomPoint.velocity);
-            double gravity = 0.0;
-
-            if (type == MechanismType.ELEVATOR) {
-                gravity = knownKg;
-            } else if (type == MechanismType.ARM) {
-                gravity = knownKg * Math.cos(randomPoint.position);
-            }
-
-            double netVoltage = randomPoint.voltage - friction - drag - gravity;
-            
-            if (Math.signum(netVoltage) != sign) continue;
-
-            double candidateKv = netVoltage / randomPoint.velocity;
-            int inliers = 0;
-
-            for (SyncedDataPoint p : steadyStateCandidates) {
-                double pSign = Math.signum(p.velocity);
-                double pFriction = knownKs * pSign;
-                double pDrag = knownKv2 * p.velocity * Math.abs(p.velocity);
-                double pGravity = 0.0;
-
-                if (type == MechanismType.ELEVATOR) {
-                    pGravity = knownKg;
-                } else if (type == MechanismType.ARM) {
-                    pGravity = knownKg * Math.cos(p.position);
-                }
-
-                double expectedVoltage = (candidateKv * p.velocity) + pFriction + pDrag + pGravity;
-                if (Math.abs(p.voltage - expectedVoltage) < voltageThreshold) {
-                    inliers++;
-                }
-            }
-
-            if (inliers > maxInliers) {
-                maxInliers = inliers;
-                bestKv = candidateKv;
-            }
-        }
-
-        double sumKv = 0;
-        int count = 0;
-        
-        for (SyncedDataPoint p : steadyStateCandidates) {
-            double pSign = Math.signum(p.velocity);
-            double pFriction = knownKs * pSign;
-            double pDrag = knownKv2 * p.velocity * Math.abs(p.velocity);
-            double pGravity = 0.0;
-
-            if (type == MechanismType.ELEVATOR) {
-                pGravity = knownKg;
-            } else if (type == MechanismType.ARM) {
-                pGravity = knownKg * Math.cos(p.position);
-            }
-
-            double expectedVoltage = (bestKv * p.velocity) + pFriction + pDrag + pGravity;
-            if (Math.abs(p.voltage - expectedVoltage) < voltageThreshold) {
-                double netV = p.voltage - pFriction - pDrag - pGravity;
-                if(Math.abs(p.velocity) > 0.001) {
-                    sumKv += (netV / p.velocity);
-                    count++;
-                }
-            }
-        }
-
-        return count > 0 ? sumKv / count : bestKv;
-    }
-
-    private static BucketResult solveBucket(List<SyncedDataPoint> sourceData, MechanismType type, double fixedKs, List<SyncedDataPoint> fastDataForCheck, boolean useKv2) {
+    private static BucketResult solveBucket(List<SyncedDataPoint> sourceData) {
         if (sourceData == null || sourceData.isEmpty()) return null;
         if (sourceData.size() < 10) return null;
 
         int rows = sourceData.size();
-        boolean useFixedKs = (fixedKs >= 0);
         
         int cols = 0;
-        int idxSign = -1, idxVel = -1, idxKv2 = -1, idxAcc = -1, idxGrav = -1, idxSin = -1;
+        int idxSign = -1, idxVel = -1, idxAcc = -1, idxGrav = -1, idxSin = -1, idxKv2 = -1;
 
-        if (!useFixedKs) { idxSign = cols++; }
-        idxVel = cols++;
-        if (useKv2) { idxKv2 = cols++; }
-        idxAcc = cols++;
-        if (type == MechanismType.ELEVATOR) { idxGrav = cols++; }
-        if (type == MechanismType.ARM) { idxSin = cols++; }
+        if (SysidApp.kFlags[0]) idxSign = cols++;
+        if (SysidApp.kFlags[1]) idxVel = cols++;
+        if (SysidApp.kFlags[2]) idxAcc = cols++;
+        if (SysidApp.kFlags[3]) idxGrav = cols++;
+        if (SysidApp.kFlags[4]) idxSin = cols++;
+        if (SysidApp.kFlags[5]) idxKv2 = cols++;
 
         SimpleMatrix mat = new SimpleMatrix(rows, cols);
         SimpleMatrix volt = new SimpleMatrix(rows, 1);
@@ -538,13 +419,13 @@ public class LogReader {
                 mat.set(r, idxSign, Math.signum(d.velocity));
             }
             
-            mat.set(r, idxVel, d.velocity);
-            
-            if (idxKv2 != -1) {
-                mat.set(r, idxKv2, d.velocity * Math.abs(d.velocity));
+            if (idxVel != -1) {
+                mat.set(r, idxVel, d.velocity);
             }
             
-            mat.set(r, idxAcc, d.acceleration);
+            if (idxAcc != -1) {
+                mat.set(r, idxAcc, d.acceleration);
+            }
             
             if (idxGrav != -1) {
                 mat.set(r, idxGrav, 1.0);
@@ -554,41 +435,25 @@ public class LogReader {
                 mat.set(r, idxSin, Math.cos(d.position)); 
             }
             
-            double effectiveVoltage = d.voltage;
-            if (useFixedKs) {
-                effectiveVoltage -= (fixedKs * Math.signum(d.velocity));
+            if (idxKv2 != -1) {
+                mat.set(r, idxKv2, d.velocity * Math.abs(d.velocity));
             }
+            
+            double effectiveVoltage = d.voltage;
             volt.set(r, 0, effectiveVoltage);
         }
         
         try {
             SimpleMatrix res = mat.solve(volt);
             
-            double calculatedKs = (useFixedKs) ? fixedKs : 0.0;
-            double calculatedKv = 0, calculatedKv2 = 0, calculatedKa = 0, calculatedKg = 0, calculatedKSin = 0;
+            double calculatedKs = 0, calculatedKv = 0, calculatedKa = 0, calculatedKg = 0, calculatedKSin = 0, calculatedKv2 = 0;
             
-            if (!useFixedKs && idxSign != -1) calculatedKs = res.get(idxSign, 0);
+            if (idxSign != -1) calculatedKs = res.get(idxSign, 0);
             if (idxVel != -1) calculatedKv = res.get(idxVel, 0);
             if (idxKv2 != -1) calculatedKv2 = res.get(idxKv2, 0);
             if (idxAcc != -1) calculatedKa = res.get(idxAcc, 0);
             if (idxGrav != -1) calculatedKg = res.get(idxGrav, 0);
             if (idxSin != -1) calculatedKSin = res.get(idxSin, 0);
-            
-            if (useFixedKs && fastDataForCheck != null && !fastDataForCheck.isEmpty()) {
-                double observedKv = measureObservedKvRANSAC(fastDataForCheck, calculatedKs, calculatedKv2, calculatedKg, type);
-                
-                if (observedKv > 0) {
-                    boolean olsIsBad = calculatedKv <= 0;
-                    boolean olsIsOutlier = Math.abs(calculatedKv - observedKv) > (observedKv * 0.5);
-
-                    if (olsIsBad || olsIsOutlier) {
-                        System.out.println("FIX: Math Kv (" + calculatedKv + ") replaced by Observed Kv (" + observedKv + ")");
-                        calculatedKv = observedKv;
-                    } else {
-                        System.out.println("Check Passed: Math Kv (" + calculatedKv + ") matches Observed Kv (" + observedKv + ")");
-                    }
-                }
-            }
 
             double sumError = 0;
             double maxError = 0;
@@ -596,15 +461,14 @@ public class LogReader {
             
             for (SyncedDataPoint d : sourceData) {
                 if (Math.abs(d.voltage) > 0.001) {
-                    double predVolts = (calculatedKs * Math.signum(d.velocity)) 
-                                     + (calculatedKv * d.velocity) 
-                                     + (calculatedKv2 * d.velocity * Math.abs(d.velocity)) 
-                                     + (calculatedKa * d.acceleration);
-                    
-                    predVolts += (type == MechanismType.ELEVATOR) ? (calculatedKg)
-                    : (type == MechanismType.ARM) ? (calculatedKg * Math.cos(d.position))
-                    : 0;
-                    
+                    double predVolts = 0;
+                    if (idxSign != -1) predVolts += calculatedKs * Math.signum(d.velocity);
+                    if (idxVel != -1) predVolts += calculatedKv * d.velocity;
+                    if (idxAcc != -1) predVolts += calculatedKa * d.acceleration;
+                    if (idxGrav != -1) predVolts += calculatedKg;
+                    if (idxSin != -1) predVolts += calculatedKSin * Math.cos(d.position);
+                    if (idxKv2 != -1) predVolts += calculatedKv2 * d.velocity * Math.abs(d.velocity);
+
                     double relError = Math.abs(d.voltage - predVolts) / Math.abs(d.voltage);
                     sumError += relError;
                     maxError = Math.max(maxError, relError);
@@ -612,7 +476,7 @@ public class LogReader {
                 }
             }
             double avgError = validCount > 0 ? sumError / validCount : 0;
-            double kp = CalculateFeedbackGains.calculateFeedbackGains(calculatedKv, calculatedKa, type);
+            double kp = CalculateFeedbackGains.calculateFeedbackGains(calculatedKv, calculatedKa);
             
             return new BucketResult(calculatedKs, calculatedKv, calculatedKv2, calculatedKa, calculatedKg, calculatedKSin, kp, avgError, maxError, rows);
         } catch (Exception e) {
@@ -624,15 +488,9 @@ public class LogReader {
     public static class CalculateFeedbackGains {
         private static final double MIN_PHYSICAL_KA = 0.05;
 
-        public static double calculateFeedbackGains(double kv, double ka, MechanismType type) {
-            double absKa = Math.abs(ka);
-            double effectiveKa = Math.max(absKa, MIN_PHYSICAL_KA);
-
-            if (type == MechanismType.VELOCITY || type == MechanismType.FLYWHEEL) {
-                return (2.0 * kv) / effectiveKa;
-            } else {
-                return (kv * kv) / (4.0 * effectiveKa);
-            }
+        public static double calculateFeedbackGains(double kv, double ka) {
+            double effectiveKa = Math.max(Math.abs(ka), MIN_PHYSICAL_KA);
+            return (kv * kv) / (4.0 * effectiveKa);
         }
     }
 }

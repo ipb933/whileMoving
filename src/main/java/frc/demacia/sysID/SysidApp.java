@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class SysidApp implements Consumer<File> {
+    public static boolean[] kFlags = {true, true, true, false, false, false};
+
     public static void main(String[] args) {
         SysidApp app = new SysidApp();
         app.show();
@@ -72,10 +74,10 @@ public class SysidApp implements Consumer<File> {
         System.out.println("File set to " + file);
         this.currentFile = file;
         LogReader.loadFile(file.getAbsolutePath());
-        analyzeFile(LogReader.MechanismType.POSITION);
+        analyzeFile();
     }
 
-    public void analyzeFile(LogReader.MechanismType type) {
+    public void analyzeFile() {
         if (currentFile == null) return;
         
         MotorData currentlySelected = motorList.getSelectedValue();
@@ -85,9 +87,9 @@ public class SysidApp implements Consumer<File> {
             MotorData.motors.clear();
             listModel.clear();
             
-            Map<String, LogReader.SysIDResults> analysisResults = LogReader.analyze(type);
+            Map<String, LogReader.SysIDResults> analysisResults = LogReader.analyze();
             
-            msg("Analysis complete (" + type + "). Found " + analysisResults.size() + " groups.");
+            msg("Analysis complete. Found " + analysisResults.size() + " groups.");
             
             int newIndexToSelect = 0;
             int counter = 0;
@@ -161,8 +163,6 @@ class SysidResultPanel extends JPanel {
     JCheckBox[] checkBoxes;
     JLabel[][] k;
     
-    JComboBox<LogReader.MechanismType> mechTypeBox;
-    
     JLabel[] labels = {new JLabel("Result Type"), new JLabel("Final Analysis")};
     JLabel[] countLabels = {new JLabel("Points"), new JLabel("0")};
     JLabel[] avgErrorLabels = {new JLabel("Avg Error %"), new JLabel("0")};
@@ -174,19 +174,6 @@ class SysidResultPanel extends JPanel {
         super(new GridLayout(nK + 7, 2, 5, 5));
         this.app = app;
 
-        add(new JLabel("Mechanism Type:"));
-        mechTypeBox = new JComboBox<>(LogReader.MechanismType.values());
-        
-        mechTypeBox.addActionListener(e -> {
-            LogReader.MechanismType selectedType = (LogReader.MechanismType) mechTypeBox.getSelectedItem();
-            SysidApp.msg("Recalculating as " + selectedType + "...");
-            app.analyzeFile(selectedType);
-        });
-        add(mechTypeBox);
-        
-        add(new JLabel(""));
-        add(new JLabel(""));
-
         add(labels[0]); add(labels[1]);
         add(countLabels[0]); add(countLabels[1]);
         add(avgErrorLabels[0]); add(avgErrorLabels[1]);
@@ -194,10 +181,20 @@ class SysidResultPanel extends JPanel {
 
         checkBoxes = new JCheckBox[nK];
         k = new JLabel[nK][1];
+        
         for(int i = 0; i < nK; i++) {
-            checkBoxes[i] = new JCheckBox(KTypes.values()[i].name());
-            checkBoxes[i].setEnabled(false);
-            checkBoxes[i].setSelected(true);
+            KTypes type = KTypes.values()[i];
+            checkBoxes[i] = new JCheckBox(type.name());
+            checkBoxes[i].setSelected(SysidApp.kFlags[i]);
+            
+            int finalI = i;
+            checkBoxes[i].addActionListener(e -> {
+                SysidApp.kFlags[finalI] = checkBoxes[finalI].isSelected();
+                if (app.getMotor() != null) {
+                    app.analyzeFile();
+                }
+            });
+            
             add(checkBoxes[i]);
             
             k[i][0] = new JLabel("0");
@@ -219,14 +216,14 @@ class SysidResultPanel extends JPanel {
         if(bucket != null) {
             k[KTypes.KS.ordinal()][0].setText(String.format("%7.5f", bucket.ks));
             k[KTypes.KV.ordinal()][0].setText(String.format("%7.5f", bucket.kv));
-            k[KTypes.KV2.ordinal()][0].setText(String.format("%7.5f", bucket.kv2));
             k[KTypes.KA.ordinal()][0].setText(String.format("%7.5f", bucket.ka));
             k[KTypes.KG.ordinal()][0].setText(String.format("%7.5f", bucket.kg));
             k[KTypes.KSIN.ordinal()][0].setText(String.format("%7.5f", bucket.ksin));
+            k[KTypes.KV2.ordinal()][0].setText(String.format("%7.5f", bucket.kv2));
             
             countLabels[1].setText(Integer.toString(bucket.points));
             avgErrorLabels[1].setText(String.format("%4.2f%%", bucket.avgError*100));
-            maxErrorLabels[1].setText(String.format("%4.2f%%", bucket.avgError*120));
+            maxErrorLabels[1].setText(String.format("%4.2f%%", bucket.maxError*100));
             
             kpLabels[1].setText(String.format("%.5f", bucket.kp));
         } else {
@@ -258,4 +255,4 @@ class MotorData {
     }
 }
 
-enum KTypes {KS, KV, KV2, KA, KG, KSIN}
+enum KTypes {KS, KV, KA, KG, KSIN, KV2}
