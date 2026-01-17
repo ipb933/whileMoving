@@ -20,14 +20,14 @@ public class Target3d {
     Chassis chassis;
 
     // shooter spees at the distanse if the robot is not moving
-    DoubleSupplier targetShooterSpeedSupplier;
-    double targetShooterSpeed;
+    DoubleSupplier targetSpeedSupplier;
+    double targetSpeed;
     // shooter angle (up/down) at the distanse if the robot is not moving (radians)
-    DoubleSupplier targetShooterAngleSupplier;
-    double targetShooterAngle;
+    DoubleSupplier targetHoodAngleSupplier;
+    double targetHoodAngle;
     // shooter Rotation (right/left) at the distanse if the robot is not moving (radians)
-    DoubleSupplier targetShooterRotationSupplier;
-    double targetShooterRotation;
+    DoubleSupplier targetTurretAngleSupplier;
+    double targetTurretAngle;
 
     // the chassis speed in the shooter angle (right/left)
     double chassisRadialSpeed;
@@ -37,13 +37,13 @@ public class Target3d {
     public Target3d(Chassis chassis, LookUpTable lookUpTable){
         this.chassis = chassis;
         this.lookUpTable = lookUpTable;
-        targetShooterSpeedSupplier = () -> {
+        targetSpeedSupplier = () -> {
             return lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[0] * MOTOR_VEL_TO_BALL_VEL;
         };
-        targetShooterAngleSupplier = () -> {
+        targetHoodAngleSupplier = () -> {
             return lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[1];
         };
-        targetShooterRotationSupplier = () -> {
+        targetTurretAngleSupplier = () -> {
             return angleFromHubAfterTime(CYCLE_TIME);
         };
     }
@@ -71,18 +71,18 @@ public class Target3d {
     }
 
     public ShootingValues getShootingValues() {
-        targetShooterSpeed = targetShooterSpeedSupplier.getAsDouble();
-        targetShooterAngle = targetShooterAngleSupplier.getAsDouble();
-        targetShooterRotation = targetShooterRotationSupplier.getAsDouble();
+        targetSpeed = targetSpeedSupplier.getAsDouble();
+        targetHoodAngle = targetHoodAngleSupplier.getAsDouble();
+        targetTurretAngle = targetTurretAngleSupplier.getAsDouble();
 
         Pose2d futurePose = chassis.computeFuturePosition(CYCLE_TIME);
 
         Rotation3d endRotation = new Rotation3d(
             0, 
-            targetShooterAngle, 
-            targetShooterRotation + futurePose.getRotation().getRadians());
+            targetHoodAngle, 
+            targetTurretAngle + futurePose.getRotation().getRadians());
         Translation3d endValues = new Translation3d(
-            targetShooterSpeed, 
+            targetSpeed, 
             endRotation
         );
         
@@ -100,11 +100,44 @@ public class Target3d {
         chassisSpeed = chassisSpeed.plus(tangentialVelocity);
 
         Translation3d shooterValues = endValues.minus(chassisSpeed);
+        // + (ShooterSpeed - targetSpeed) * SPIN_CORRECTION_GAIN
 
+        // option 1: do nothing, change chassis speed
+        // double ShooterSpeed = shooterValues.getNorm();
+        // return new ShootingValues(
+        //     ShooterSpeed / MOTOR_VEL_TO_BALL_VEL, 
+        //     Math.asin(shooterValues.getZ() / ShooterSpeed), 
+        //     shooterValues.toTranslation2d().getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
+        // );
+        
+        // option 2: add corraction to speed, not using time
+        // double ShooterSpeed = shooterValues.getNorm();
+        // return new ShootingValues(
+        //     ShooterSpeed / MOTOR_VEL_TO_BALL_VEL  + (ShooterSpeed - targetSpeed) * SPIN_CORRECTION_GAIN, 
+        //     Math.asin(shooterValues.getZ() / ShooterSpeed), 
+        //     shooterValues.toTranslation2d().getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
+        // );
+        
+        // option 3: add corraction to hood angle, not using time
+        // double ShooterSpeed = shooterValues.getNorm();
+        // return new ShootingValues(
+        //     ShooterSpeed / MOTOR_VEL_TO_BALL_VEL, 
+        //     Math.asin(shooterValues.getZ() / ShooterSpeed)  + (ShooterSpeed - targetSpeed) * SPIN_CORRECTION_GAIN, 
+        //     shooterValues.toTranslation2d().getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
+        // );
+        
+        // option 4: remove y speed
         double ShooterSpeed = shooterValues.getNorm();
+        shooterValues = shooterValues.minus(new Translation3d(
+            0, 
+            0, 
+            SPIN_CORRECTION_GAIN * (ShooterSpeed - targetSpeed) * 
+            lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[2] // get time to be above hub 
+        ));
+        ShooterSpeed = shooterValues.getNorm();
         return new ShootingValues(
-            ShooterSpeed / MOTOR_VEL_TO_BALL_VEL , 
-            Math.asin(shooterValues.getZ() / ShooterSpeed) + (ShooterSpeed - targetShooterSpeed) * SPIN_CORRECTION_GAIN, 
+            ShooterSpeed / MOTOR_VEL_TO_BALL_VEL, 
+            Math.asin(shooterValues.getZ() / ShooterSpeed), 
             shooterValues.toTranslation2d().getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
         );
     }
