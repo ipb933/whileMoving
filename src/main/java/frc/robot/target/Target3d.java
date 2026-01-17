@@ -131,7 +131,7 @@ public class Target3d {
         shooterValues = shooterValues.minus(new Translation3d(
             0, 
             0, 
-            SPIN_CORRECTION_GAIN * (ShooterSpeed - targetSpeed) * 
+            SPIN_CORRECTION_GAIN * (ShooterSpeed - targetSpeed) * targetSpeed *
             lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[2] // get time to be above hub 
         ));
         ShooterSpeed = shooterValues.getNorm();
