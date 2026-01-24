@@ -46,7 +46,7 @@ import frc.demacia.utils.sensors.Pigeon;
 import frc.demacia.vision.subsystem.Quest;
 import frc.demacia.vision.subsystem.Tag;
 import frc.demacia.vision.subsystem.ObjectPose;
-import frc.demacia.vision.utils.VisionFuse;
+// import frc.demacia.vision.utils.VisionFuse;
 import static frc.demacia.vision.utils.VisionConstants.*;
 
 /**
@@ -97,7 +97,7 @@ public class Chassis extends SubsystemBase {
 
     public Tag[] tags;
     public Quest quest;
-    public VisionFuse visionFuse;
+    // public VisionFuse visionFuse;
     public ObjectPose objectPose;
 
     private StatusSignal<Angle> gyroYawStatus;
@@ -134,7 +134,7 @@ public class Chassis extends SubsystemBase {
         field = new Field2d();
 
         tags = chassisConfig.tags;
-        visionFuse = new VisionFuse(tags);
+        // visionFuse = new VisionFuse(tags);
         if (chassisConfig.objectCamera != null) {
             objectPose = new ObjectPose(
                 chassisConfig.objectCamera, 
@@ -145,13 +145,13 @@ public class Chassis extends SubsystemBase {
 
         SmartDashboard.putData("reset gyro", new InstantCommand(() -> setYaw(Rotation2d.kZero)).ignoringDisable(true));
         SmartDashboard.putData("reset gyro 180", new InstantCommand(() -> setYaw(Rotation2d.kPi)).ignoringDisable(true));
-        SmartDashboard.putData("set gyro to 3D tag", new InstantCommand(() -> setYaw(
-                Rotation2d.fromDegrees(visionFuse.get3DAngle()))).ignoringDisable(true));
+        // SmartDashboard.putData("set gyro to 3D tag", new InstantCommand(() -> setYaw(
+                // Rotation2d.fromDegrees(visionFuse.get3DAngle()))).ignoringDisable(true));
         SmartDashboard.putData("change camera dimension", new Command() {
             private static boolean is3d = false;
             
             public void initialize() {
-                visionFuse.set3D(!is3d);
+                // visionFuse.set3D(!is3d);
                 is3d = !is3d;
             };
             
@@ -333,10 +333,10 @@ public class Chassis extends SubsystemBase {
         double speed = Utilities.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
 
         // Vision confidence adjustment
-        if (visionFuse.getVisionConfidence() < 0.3) {
-            x += 0.3;
-            y += 0.3;
-        }
+        // if (visionFuse.getVisionConfidence() < 0.3) {
+        //     x += 0.3;
+        //     y += 0.3;
+        // }
 
         // Speed-based confidence calculation
         if (speed > WORST_RELIABLE_SPEED) {
@@ -371,7 +371,7 @@ public class Chassis extends SubsystemBase {
 
     @Override
     public void periodic() {
-        visionFusePoseEstimation = visionFuse.getPoseEstemation();
+        // visionFusePoseEstimation = visionFuse.getPoseEstemation();
         questPoseEstimation = quest.getRobotPose();
         gyroAngle = getGyroAngle();
 
@@ -382,15 +382,15 @@ public class Chassis extends SubsystemBase {
         );
         demaciaPoseEstimator.addOdomteryCalculation(observation, new Translation2d()); 
 
-        if (visionFusePoseEstimation != null) {
-            updateVision(new Pose2d(visionFusePoseEstimation.getTranslation(), gyroAngle));
-        }
-        else if(quest.isCalibrated() && questPoseEstimation != null){
-            updateQuest(questPoseEstimation);
-        }
-        else if(visionFusePoseEstimation != null){
-            quest.setQuestPose(new Pose3d(new Pose2d(visionFusePoseEstimation.getTranslation(), gyroAngle)));
-        }
+        // if (visionFusePoseEstimation != null) {
+        //     updateVision(new Pose2d(visionFusePoseEstimation.getTranslation(), gyroAngle));
+        // }
+        // else if(quest.isCalibrated() && questPoseEstimation != null){
+        //     updateQuest(questPoseEstimation);
+        // }
+        // else if(visionFusePoseEstimation != null){
+        //     quest.setQuestPose(new Pose3d(new Pose2d(visionFusePoseEstimation.getTranslation(), gyroAngle)));
+        // }
 
         field.setRobotPose(demaciaPoseEstimator.getEstimatedPose());
     }

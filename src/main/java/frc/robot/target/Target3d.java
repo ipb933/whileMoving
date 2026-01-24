@@ -127,12 +127,27 @@ public class Target3d {
         // );
         
         // option 4: remove y speed
+        // double ShooterSpeed = shooterValues.getNorm();
+        // shooterValues = shooterValues.minus(new Translation3d(
+        //     0, 
+        //     0, 
+        //     SPIN_CORRECTION_GAIN * (ShooterSpeed - targetSpeed) * targetSpeed *
+        //     lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[2] // get time to be above hub 
+        // ));
+        // ShooterSpeed = shooterValues.getNorm();
+        // return new ShootingValues(
+        //     ShooterSpeed / MOTOR_VEL_TO_BALL_VEL, 
+        //     Math.asin(shooterValues.getZ() / ShooterSpeed), 
+        //     shooterValues.toTranslation2d().getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
+        // );
+        
+        // option 5: remove y speed and no t
         double ShooterSpeed = shooterValues.getNorm();
         shooterValues = shooterValues.minus(new Translation3d(
             0, 
             0, 
             SPIN_CORRECTION_GAIN * (ShooterSpeed - targetSpeed) * targetSpeed *
-            lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[2] // get time to be above hub 
+            targetSpeed * Math.cos(Math.asin(shooterValues.getZ() / ShooterSpeed)) *  distanceFromHubAfterTime(CYCLE_TIME)// time to be above hub 
         ));
         ShooterSpeed = shooterValues.getNorm();
         return new ShootingValues(
