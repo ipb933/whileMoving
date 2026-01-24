@@ -16,7 +16,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -26,8 +25,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.demacia.kinematics.DemaciaKinematics;
 import frc.demacia.odometry.DemaciaPoseEstimator;
 import frc.demacia.odometry.DemaciaPoseEstimator.OdometryObservation;
-import frc.demacia.odometry.DemaciaPoseEstimator.VisionMeasurment;
-import java.util.Optional;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
@@ -292,36 +289,6 @@ public class Chassis extends SubsystemBase {
         for (int i = 0; i < states.length; i++) {
             modules[i].setState(states[i]);
         }
-    }
-
-    private void updateVision(Pose2d pose) {
-        demaciaPoseEstimator.updateVisionSTD(getSTD());
-        
-        VisionMeasurment measurement = new VisionMeasurment(
-            Timer.getFPGATimestamp() - 0.05,
-            pose.getTranslation(),
-            Optional.of(pose.getRotation())
-        );
-        demaciaPoseEstimator.addVisionMeasurement(measurement);
-    }
-
-    private void updateQuest(Pose2d pose){
-        demaciaPoseEstimator.updateVisionSTD(getSTDQuest());
-        
-        VisionMeasurment measurement = new VisionMeasurment(
-            quest.getTimestamp(),
-            pose.getTranslation(),
-            Optional.of(pose.getRotation())
-        );
-        demaciaPoseEstimator.addVisionMeasurement(measurement);
-    }
-
-    private Matrix<N3,N1> getSTDQuest(){
-        double x =0.005; 
-        double y =0.005; 
-        double theta =0.035; 
-
-        return new Matrix<N3, N1>(new SimpleMatrix(new double[] { x, y, theta }));
     }
 
     private Matrix<N3, N1> getSTD() {

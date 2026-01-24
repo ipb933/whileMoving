@@ -27,15 +27,15 @@ import java.util.Objects;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, StructSerializable {
+public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSerializable, StructSerializable {
 
-  private Translation2d m_translation;
-  private Rotation2d m_rotation;
+  private Translation2dDemacia m_translation;
+  private Rotation2dDemacia m_rotation;
 
   /** Constructs a pose at the origin facing toward the positive X axis. */
-  public Pose2d() {
-    m_translation = new Translation2d();
-    m_rotation = new Rotation2d();
+  public Pose2dDemacia() {
+    m_translation = new Translation2dDemacia();
+    m_rotation = new Rotation2dDemacia();
   }
 
   /**
@@ -45,9 +45,9 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param rotation The rotational component of the pose.
    */
   @JsonCreator
-  public Pose2d(
-      @JsonProperty(required = true, value = "translation") Translation2d translation,
-      @JsonProperty(required = true, value = "rotation") Rotation2d rotation) {
+  public Pose2dDemacia(
+      @JsonProperty(required = true, value = "translation") Translation2dDemacia translation,
+      @JsonProperty(required = true, value = "rotation") Rotation2dDemacia rotation) {
     m_translation = translation;
     m_rotation = rotation;
   }
@@ -59,8 +59,8 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param y The y component of the translational component of the pose.
    * @param rotation The rotational component of the pose.
    */
-  public Pose2d(double x, double y, Rotation2d rotation) {
-    m_translation = new Translation2d(x, y);
+  public Pose2dDemacia(double x, double y, Rotation2dDemacia rotation) {
+    m_translation = new Translation2dDemacia(x, y);
     m_rotation = rotation;
   }
 
@@ -72,7 +72,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param y The y component of the translational component of the pose.
    * @param rotation The rotational component of the pose.
    */
-  public Pose2d(Distance x, Distance y, Rotation2d rotation) {
+  public Pose2dDemacia(Distance x, Distance y, Rotation2dDemacia rotation) {
     this(x.in(Meters), y.in(Meters), rotation);
   }
 
@@ -82,9 +82,9 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param matrix The affine transformation matrix.
    * @throws IllegalArgumentException if the affine transformation matrix is invalid.
    */
-  public Pose2d(Matrix<N3, N3> matrix) {
-    m_translation = new Translation2d(matrix.get(0, 2), matrix.get(1, 2));
-    m_rotation = new Rotation2d(matrix.block(2, 2, 0, 0));
+  public Pose2dDemacia(Matrix<N3, N3> matrix) {
+    m_translation = new Translation2dDemacia(matrix.get(0, 2), matrix.get(1, 2));
+    m_rotation = new Rotation2dDemacia(matrix.block(2, 2, 0, 0));
     if (matrix.get(2, 0) != 0.0 || matrix.get(2, 1) != 0.0 || matrix.get(2, 2) != 1.0) {
       throw new IllegalArgumentException("Affine transformation matrix is invalid");
     }
@@ -95,7 +95,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param other The pose to copy from.
    * @return This object.
    */
-  public Pose2d set(Pose2d other) {
+  public Pose2dDemacia set(Pose2dDemacia other) {
     m_translation.set(other.m_translation);
     m_rotation.set(other.m_rotation);
     return this;
@@ -108,7 +108,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param rot The new rotation.
    * @return This object.
    */
-  public Pose2d set(double x, double y, Rotation2d rot) {
+  public Pose2dDemacia set(double x, double y, Rotation2dDemacia rot) {
     m_translation.set(x, y);
     m_rotation.set(rot);
     return this;
@@ -127,7 +127,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param other The transform to transform the pose by.
    * @return This object (modified).
    */
-  public Pose2d plus(Transform2d other) {
+  public Pose2dDemacia plus(Transform2dDemacia other) {
     return transformBy(other);
   }
 
@@ -139,7 +139,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param other The pose to subtract.
    * @return This object (modified, now representing the difference).
    */
-  public Pose2d minus(Pose2d other) {
+  public Pose2dDemacia minus(Pose2dDemacia other) {
     return relativeTo(other);
   }
 
@@ -149,7 +149,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @return The translational component of the pose.
    */
   @JsonProperty
-  public Translation2d getTranslation() {
+  public Translation2dDemacia getTranslation() {
     return m_translation;
   }
 
@@ -195,7 +195,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @return The rotational component of the pose.
    */
   @JsonProperty
-  public Rotation2d getRotation() {
+  public Rotation2dDemacia getRotation() {
     return m_rotation;
   }
 
@@ -206,7 +206,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param scalar The scalar.
    * @return This object (modified).
    */
-  public Pose2d times(double scalar) {
+  public Pose2dDemacia times(double scalar) {
     m_translation.times(scalar);
     m_rotation.times(scalar);
     return this;
@@ -219,7 +219,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param scalar The scalar.
    * @return This object (modified).
    */
-  public Pose2d div(double scalar) {
+  public Pose2dDemacia div(double scalar) {
     return times(1.0 / scalar);
   }
 
@@ -230,7 +230,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param other The rotation to transform the pose by.
    * @return This object (modified).
    */
-  public Pose2d rotateBy(Rotation2d other) {
+  public Pose2dDemacia rotateBy(Rotation2dDemacia other) {
     m_translation.rotateBy(other);
     m_rotation.rotateBy(other);
     return this;
@@ -244,7 +244,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param other The transform to transform the pose by.
    * @return This object (modified).
    */
-  public Pose2d transformBy(Transform2d other) {
+  public Pose2dDemacia transformBy(Transform2dDemacia other) {
     double cos = m_rotation.getCos();
     double sin = m_rotation.getSin();
     double tx = other.getX();
@@ -267,7 +267,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param other The pose that is the origin of the new coordinate frame.
    * @return This object (modified, now relative to other).
    */
-  public Pose2d relativeTo(Pose2d other) {
+  public Pose2dDemacia relativeTo(Pose2dDemacia other) {
     double dx = m_translation.getX() - other.getX();
     double dy = m_translation.getY() - other.getY();
     
@@ -292,7 +292,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param rot The rotation to rotate the pose by.
    * @return This object (modified).
    */
-  public Pose2d rotateAround(Translation2d point, Rotation2d rot) {
+  public Pose2dDemacia rotateAround(Translation2dDemacia point, Rotation2dDemacia rot) {
     m_translation.rotateAround(point, rot);
     m_rotation.rotateBy(rot);
     return this;
@@ -319,7 +319,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * Units.degreesToRadians(0.5)).
    * @return This object (modified).
    */
-  public Pose2d exp(Twist2d twist) {
+  public Pose2dDemacia exp(Twist2d twist) {
     double dx = twist.dx;
     double dy = twist.dy;
     double dtheta = twist.dtheta;
@@ -348,7 +348,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
     double newY = transformX * currentSin + transformY * currentCos;
 
     m_translation.set(m_translation.getX() + newX, m_translation.getY() + newY);
-    m_rotation.rotateBy(Rotation2d.fromRadians(dtheta));
+    m_rotation.rotateBy(Rotation2dDemacia.fromRadians(dtheta));
 
     return this;
   }
@@ -360,7 +360,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param end The end pose for the transformation.
    * @return The twist that maps this to end.
    */
-  public Twist2d log(Pose2d end) {
+  public Twist2d log(Pose2dDemacia end) {
     final var transform = end.relativeTo(this);
     final var dtheta = transform.getRotation().getRadians();
     final var halfDtheta = dtheta / 2.0;
@@ -374,10 +374,10 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
       halfThetaByTanOfHalfDtheta = -(halfDtheta * transform.getRotation().getSin()) / cosMinusOne;
     }
 
-    Translation2d translationPart =
+    Translation2dDemacia translationPart =
         transform
             .getTranslation()
-            .rotateBy(new Rotation2d(halfThetaByTanOfHalfDtheta, -halfDtheta))
+            .rotateBy(new Rotation2dDemacia(halfThetaByTanOfHalfDtheta, -halfDtheta))
             .times(Math.hypot(halfThetaByTanOfHalfDtheta, halfDtheta));
 
     return new Twist2d(translationPart.getX(), translationPart.getY(), dtheta);
@@ -412,13 +412,13 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    * @param poses The collection of poses to find the nearest.
    * @return The nearest Pose2d from the collection.
    */
-  public Pose2d nearest(Collection<Pose2d> poses) {
+  public Pose2dDemacia nearest(Collection<Pose2dDemacia> poses) {
     return Collections.min(
         poses,
         Comparator.comparing(
-                (Pose2d other) -> this.getTranslation().getDistance(other.getTranslation()))
+                (Pose2dDemacia other) -> this.getTranslation().getDistance(other.getTranslation()))
             .thenComparing(
-                (Pose2d other) ->
+                (Pose2dDemacia other) ->
                     Math.abs(this.getRotation().minus(other.getRotation()).getRadians())));
   }
 
@@ -435,7 +435,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
    */
   @Override
   public boolean equals(Object obj) {
-    return obj instanceof Pose2d pose
+    return obj instanceof Pose2dDemacia pose
         && m_translation.equals(pose.m_translation)
         && m_rotation.equals(pose.m_rotation);
   }
@@ -446,7 +446,7 @@ public class Pose2d implements Interpolatable<Pose2d>, ProtobufSerializable, Str
   }
 
   @Override
-  public Pose2d interpolate(Pose2d endValue, double t) {
+  public Pose2dDemacia interpolate(Pose2dDemacia endValue, double t) {
     if (t < 0) {
       return this;
     } else if (t >= 1) {

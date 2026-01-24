@@ -64,10 +64,10 @@ public class Target3d {
 
     public double angleFromHubAfterTime(double sec) {
         Translation2d turretPos = getTurretFuturePosition(sec);
-        double fieldRelativeAngle = TargetConstants.hubPos.minus(turretPos).getAngle().getRadians();
+        double turretAngle = TargetConstants.hubPos.minus(turretPos).getAngle().getRadians();
     
         double chassisRotation = chassis.computeFuturePosition(sec).getRotation().getRadians();
-        return fieldRelativeAngle - chassisRotation;
+        return turretAngle - chassisRotation;
     }
 
     public ShootingValues getShootingValues() {

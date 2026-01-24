@@ -22,10 +22,10 @@ import java.util.Objects;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Transform2d implements ProtobufSerializable, StructSerializable {
+public class Transform2dDemacia implements ProtobufSerializable, StructSerializable {
 
-  private final Translation2d m_translation;
-  private final Rotation2d m_rotation;
+  private final Translation2dDemacia m_translation;
+  private final Rotation2dDemacia m_rotation;
 
   /**
    * Constructs the transform that maps the initial pose to the final pose.
@@ -33,20 +33,20 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param initial The initial pose for the transformation.
    * @param last The final pose for the transformation.
    */
-  public Transform2d(Pose2d initial, Pose2d last) {
+  public Transform2dDemacia(Pose2dDemacia initial, Pose2dDemacia last) {
     // 1. Calculate translation difference (last - initial)
     // We create a NEW translation from 'last' to avoid mutating it.
-    m_translation = new Translation2d(last.getTranslation().getX(), last.getTranslation().getY());
+    m_translation = new Translation2dDemacia(last.getTranslation().getX(), last.getTranslation().getY());
     m_translation.minus(initial.getTranslation());
 
     // 2. Rotate delta by -initial.rotation
     // We create a NEW rotation for the inverse to avoid mutating 'initial'.
-    Rotation2d initialRotInv = new Rotation2d(initial.getRotation().getRadians());
+    Rotation2dDemacia initialRotInv = new Rotation2dDemacia(initial.getRotation().getRadians());
     initialRotInv.unaryMinus();
     m_translation.rotateBy(initialRotInv);
 
     // 3. Calculate rotation difference
-    m_rotation = new Rotation2d(last.getRotation().getRadians());
+    m_rotation = new Rotation2dDemacia(last.getRotation().getRadians());
     m_rotation.minus(initial.getRotation());
   }
 
@@ -57,9 +57,9 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param rotation Rotational component of the transform.
    */
   @JsonCreator
-  public Transform2d(
-      @JsonProperty(required = true, value = "translation") Translation2d translation,
-      @JsonProperty(required = true, value = "rotation") Rotation2d rotation) {
+  public Transform2dDemacia(
+      @JsonProperty(required = true, value = "translation") Translation2dDemacia translation,
+      @JsonProperty(required = true, value = "rotation") Rotation2dDemacia rotation) {
     m_translation = translation;
     m_rotation = rotation;
   }
@@ -71,8 +71,8 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param y The y component of the translational component of the transform.
    * @param rotation The rotational component of the transform.
    */
-  public Transform2d(double x, double y, Rotation2d rotation) {
-    m_translation = new Translation2d(x, y);
+  public Transform2dDemacia(double x, double y, Rotation2dDemacia rotation) {
+    m_translation = new Translation2dDemacia(x, y);
     m_rotation = rotation;
   }
 
@@ -84,7 +84,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param y The y component of the translational component of the transform.
    * @param rotation The rotational component of the transform.
    */
-  public Transform2d(Distance x, Distance y, Rotation2d rotation) {
+  public Transform2dDemacia(Distance x, Distance y, Rotation2dDemacia rotation) {
     this(x.in(Meters), y.in(Meters), rotation);
   }
 
@@ -94,18 +94,18 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param matrix The affine transformation matrix.
    * @throws IllegalArgumentException if the affine transformation matrix is invalid.
    */
-  public Transform2d(Matrix<N3, N3> matrix) {
-    m_translation = new Translation2d(matrix.get(0, 2), matrix.get(1, 2));
-    m_rotation = new Rotation2d(matrix.block(2, 2, 0, 0));
+  public Transform2dDemacia(Matrix<N3, N3> matrix) {
+    m_translation = new Translation2dDemacia(matrix.get(0, 2), matrix.get(1, 2));
+    m_rotation = new Rotation2dDemacia(matrix.block(2, 2, 0, 0));
     if (matrix.get(2, 0) != 0.0 || matrix.get(2, 1) != 0.0 || matrix.get(2, 2) != 1.0) {
       throw new IllegalArgumentException("Affine transformation matrix is invalid");
     }
   }
 
   /** Constructs the identity transform -- maps an initial pose to itself. */
-  public Transform2d() {
-    m_translation = new Translation2d();
-    m_rotation = new Rotation2d();
+  public Transform2dDemacia() {
+    m_translation = new Translation2dDemacia();
+    m_rotation = new Rotation2dDemacia();
   }
 
   /**
@@ -113,7 +113,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param other The transform to copy from.
    * @return This object.
    */
-  public Transform2d set(Transform2d other) {
+  public Transform2dDemacia set(Transform2dDemacia other) {
     m_translation.set(other.m_translation);
     m_rotation.set(other.m_rotation);
     return this;
@@ -126,7 +126,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param scalar The scalar.
    * @return This object (modified).
    */
-  public Transform2d times(double scalar) {
+  public Transform2dDemacia times(double scalar) {
     m_translation.times(scalar);
     m_rotation.times(scalar);
     return this;
@@ -139,7 +139,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param scalar The scalar.
    * @return This object (modified).
    */
-  public Transform2d div(double scalar) {
+  public Transform2dDemacia div(double scalar) {
     return times(1.0 / scalar);
   }
 
@@ -151,10 +151,10 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @param other The transform to compose with this one.
    * @return This object (modified).
    */
-  public Transform2d plus(Transform2d other) {
+  public Transform2dDemacia plus(Transform2dDemacia other) {
     // T_new = T_this + R_this * T_other
     // We make a copy of other.translation to safely rotate it
-    Translation2d otherTrans = new Translation2d(other.getTranslation().getX(), other.getTranslation().getY());
+    Translation2dDemacia otherTrans = new Translation2dDemacia(other.getTranslation().getX(), other.getTranslation().getY());
     otherTrans.rotateBy(m_rotation);
     
     m_translation.plus(otherTrans);
@@ -171,7 +171,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @return The translational component of the transform.
    */
   @JsonProperty
-  public Translation2d getTranslation() {
+  public Translation2dDemacia getTranslation() {
     return m_translation;
   }
 
@@ -239,7 +239,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    * @return Reference to the rotational component of the transform.
    */
   @JsonProperty
-  public Rotation2d getRotation() {
+  public Rotation2dDemacia getRotation() {
     return m_rotation;
   }
 
@@ -249,7 +249,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    *
    * @return This object (modified).
    */
-  public Transform2d inverse() {
+  public Transform2dDemacia inverse() {
     // 1. Invert rotation (R = -R)
     m_rotation.unaryMinus();
     
@@ -275,7 +275,7 @@ public class Transform2d implements ProtobufSerializable, StructSerializable {
    */
   @Override
   public boolean equals(Object obj) {
-    return obj instanceof Transform2d other
+    return obj instanceof Transform2dDemacia other
         && other.m_translation.equals(m_translation)
         && other.m_rotation.equals(m_rotation);
   }

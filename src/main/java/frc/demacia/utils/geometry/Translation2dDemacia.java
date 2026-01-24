@@ -31,14 +31,14 @@ import java.util.Objects;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Translation2d
-    implements Interpolatable<Translation2d>, ProtobufSerializable, StructSerializable {
+public class Translation2dDemacia
+    implements Interpolatable<Translation2dDemacia>, ProtobufSerializable, StructSerializable {
 
   private double m_x;
   private double m_y;
 
   /** Constructs a Translation2d with X and Y components equal to zero. */
-  public Translation2d() {
+  public Translation2dDemacia() {
     this(0.0, 0.0);
   }
 
@@ -49,7 +49,7 @@ public class Translation2d
    * @param y The y component of the translation.
    */
   @JsonCreator
-  public Translation2d(
+  public Translation2dDemacia(
       @JsonProperty(required = true, value = "x") double x,
       @JsonProperty(required = true, value = "y") double y) {
     m_x = x;
@@ -63,7 +63,7 @@ public class Translation2d
    * @param distance The distance from the origin to the end of the translation.
    * @param angle The angle between the x-axis and the translation vector.
    */
-  public Translation2d(double distance, Rotation2d angle) {
+  public Translation2dDemacia(double distance, Rotation2dDemacia angle) {
     m_x = distance * angle.getCos();
     m_y = distance * angle.getSin();
   }
@@ -75,7 +75,7 @@ public class Translation2d
    * @param x The x component of the translation.
    * @param y The y component of the translation.
    */
-  public Translation2d(Distance x, Distance y) {
+  public Translation2dDemacia(Distance x, Distance y) {
     this(x.in(Meters), y.in(Meters));
   }
 
@@ -85,7 +85,7 @@ public class Translation2d
    *
    * @param vector The translation vector.
    */
-  public Translation2d(Vector<N2> vector) {
+  public Translation2dDemacia(Vector<N2> vector) {
     this(vector.get(0), vector.get(1));
   }
 
@@ -96,7 +96,7 @@ public class Translation2d
    * @param other The Translation2d to copy from.
    * @return This object.
    */
-  public Translation2d set(Translation2d other) {
+  public Translation2dDemacia set(Translation2dDemacia other) {
     m_x = other.m_x;
     m_y = other.m_y;
     return this;
@@ -110,7 +110,7 @@ public class Translation2d
    * @param y The y to set.
    * @return This object.
    */
-  public Translation2d set(double x, double y) {
+  public Translation2dDemacia set(double x, double y) {
     m_x = x;
     m_y = y;
     return this;
@@ -124,13 +124,13 @@ public class Translation2d
    * @param other The translation to compute the distance to.
    * @return The distance between the two translations.
    */
-  public double getDistance(Translation2d other) {
+  public double getDistance(Translation2dDemacia other) {
     return Math.hypot(other.m_x - m_x, other.m_y - m_y);
   }
 
   /**
    * Calculates the square of the distance between two translations in 2D space. This is equivalent
-   * to squaring the result of {@link #getDistance(Translation2d)}, but avoids computing a square
+   * to squaring the result of {@link #getDistance(Translation2dDemacia)}, but avoids computing a square
    * root.
    *
    * <p>The square of the distance between translations is defined as (x₂−x₁)²+(y₂−y₁)².
@@ -138,7 +138,7 @@ public class Translation2d
    * @param other The translation to compute the squared distance to.
    * @return The square of the distance between the two translations, in square meters.
    */
-  public double getSquaredDistance(Translation2d other) {
+  public double getSquaredDistance(Translation2dDemacia other) {
     double dx = other.m_x - m_x;
     double dy = other.m_y - m_y;
     return dx * dx + dy * dy;
@@ -215,8 +215,8 @@ public class Translation2d
    *
    * @return The angle of the translation
    */
-  public Rotation2d getAngle() {
-    return new Rotation2d(m_x, m_y);
+  public Rotation2dDemacia getAngle() {
+    return new Rotation2dDemacia(m_x, m_y);
   }
 
   /**
@@ -237,7 +237,7 @@ public class Translation2d
    * @param other The rotation to rotate the translation by.
    * @return This object (modified).
    */
-  public Translation2d rotateBy(Rotation2d other) {
+  public Translation2dDemacia rotateBy(Rotation2dDemacia other) {
     double x = m_x;
     m_x = x * other.getCos() - m_y * other.getSin();
     m_y = x * other.getSin() + m_y * other.getCos();
@@ -257,7 +257,7 @@ public class Translation2d
    * @param rot The rotation to rotate the translation by.
    * @return This object (modified).
    */
-  public Translation2d rotateAround(Translation2d other, Rotation2d rot) {
+  public Translation2dDemacia rotateAround(Translation2dDemacia other, Rotation2dDemacia rot) {
     double x = m_x;
     m_x = (m_x - other.getX()) * rot.getCos() - (m_y - other.getY()) * rot.getSin() + other.getX();
     m_y = (x - other.getX()) * rot.getSin() + (m_y - other.getY()) * rot.getCos() + other.getY();
@@ -272,7 +272,7 @@ public class Translation2d
    * @param other The translation to compute the dot product with.
    * @return The dot product between the two translations, in square meters.
    */
-  public double dot(Translation2d other) {
+  public double dot(Translation2dDemacia other) {
     return m_x * other.m_x + m_y * other.m_y;
   }
 
@@ -284,7 +284,7 @@ public class Translation2d
    * @param other The translation to compute the cross product with.
    * @return The cross product between the two translations, in square meters.
    */
-  public double cross(Translation2d other) {
+  public double cross(Translation2dDemacia other) {
     return m_x * other.m_y - m_y * other.m_x;
   }
 
@@ -297,7 +297,7 @@ public class Translation2d
    * @param other The translation to add.
    * @return This object (modified).
    */
-  public Translation2d plus(Translation2d other) {
+  public Translation2dDemacia plus(Translation2dDemacia other) {
     m_x = m_x + other.m_x;
     m_y = m_y + other.m_y;
     return this;
@@ -312,7 +312,7 @@ public class Translation2d
    * @param other The translation to subtract.
    * @return This object (modified).
    */
-  public Translation2d minus(Translation2d other) {
+  public Translation2dDemacia minus(Translation2dDemacia other) {
     m_x = m_x - other.m_x;
     m_y = m_y - other.m_y;
     return this;
@@ -325,7 +325,7 @@ public class Translation2d
    *
    * @return This object (modified).
    */
-  public Translation2d unaryMinus() {
+  public Translation2dDemacia unaryMinus() {
     m_x = -m_x;
     m_y = -m_y;
     return this;
@@ -340,7 +340,7 @@ public class Translation2d
    * @param scalar The scalar to multiply by.
    * @return This object (modified).
    */
-  public Translation2d times(double scalar) {
+  public Translation2dDemacia times(double scalar) {
     m_x = m_x * scalar;
     m_y = m_y * scalar;
     return this;
@@ -355,7 +355,7 @@ public class Translation2d
    * @param scalar The scalar to multiply by.
    * @return This object (modified).
    */
-  public Translation2d div(double scalar) {
+  public Translation2dDemacia div(double scalar) {
     m_x = m_x / scalar;
     m_y = m_y / scalar;
     return this;
@@ -367,7 +367,7 @@ public class Translation2d
    * @param translations The collection of translations.
    * @return The nearest Translation2d from the collection.
    */
-  public Translation2d nearest(Collection<Translation2d> translations) {
+  public Translation2dDemacia nearest(Collection<Translation2dDemacia> translations) {
     return Collections.min(translations, Comparator.comparing(this::getDistance));
   }
 
@@ -384,7 +384,7 @@ public class Translation2d
    */
   @Override
   public boolean equals(Object obj) {
-    return obj instanceof Translation2d other
+    return obj instanceof Translation2dDemacia other
         && Math.abs(other.m_x - m_x) < 1E-9
         && Math.abs(other.m_y - m_y) < 1E-9;
   }
@@ -395,8 +395,8 @@ public class Translation2d
   }
 
   @Override
-  public Translation2d interpolate(Translation2d endValue, double t) {
-    return new Translation2d(
+  public Translation2dDemacia interpolate(Translation2dDemacia endValue, double t) {
+    return new Translation2dDemacia(
         MathUtil.interpolate(this.getX(), endValue.getX(), t),
         MathUtil.interpolate(this.getY(), endValue.getY(), t));
   }
