@@ -100,7 +100,7 @@ public class Pigeon extends Pigeon2 implements SensorInterface{
         pigeonConfig.GyroTrim.GyroScalarZ = config.isInverted?-config.zScalar:config.zScalar;
         pigeonConfig.Pigeon2Features.EnableCompass = config.compass;
         pigeonConfig.Pigeon2Features.DisableTemperatureCompensation = !config.temperatureCompensation;
-        pigeonConfig.Pigeon2Features.DisableNoMotionCalibration = !config.noMotionCalibration;
+        pigeonConfig.Pigeon2Features.DisableNoMotionCalibration = config.noMotionCalibration;
         getConfigurator().apply(pigeonConfig);
     }
 
