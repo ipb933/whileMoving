@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.demacia.utils.LookUpTable;
 import frc.demacia.utils.chassis.Chassis;
+import frc.robot.Shooter.utils.ShooterUtils;
+
 import static frc.robot.target.TargetConstants.*;
 
 public class Target3d {
@@ -49,7 +51,8 @@ public class Target3d {
     }
 
     private Translation2d getTurretFuturePosition(double sec) {
-        Pose2d futurePose = chassis.computeFuturePosition(sec);
+        ChassisSpeeds robotSpeeds = chassis.getChassisSpeedsFieldRel();
+        Pose2d futurePose = ShooterUtils.computeFuturePosition(robotSpeeds, chassis.getPose(), sec);
         double mountingAngle = TargetConstants.SHOOTER_ANGLE_FROM_CENTER + futurePose.getRotation().getRadians();
         
         return futurePose.getTranslation().plus(new Translation2d(
@@ -66,8 +69,10 @@ public class Target3d {
         Translation2d turretPos = getTurretFuturePosition(sec);
         double turretAngle = TargetConstants.hubPos.minus(turretPos).getAngle().getRadians();
     
-        double chassisRotation = chassis.computeFuturePosition(sec).getRotation().getRadians();
-        return turretAngle - chassisRotation;
+        ChassisSpeeds robotSpeeds = chassis.getChassisSpeedsFieldRel();
+        Pose2d futurePose = ShooterUtils.computeFuturePosition(robotSpeeds, chassis.getPose(), sec);
+        double chassisRotation = futurePose.getRotation().getRadians();
+        return turretAngle /*- chassisRotation*/;
     }
 
     public ShootingValues getShootingValues() {
@@ -75,7 +80,9 @@ public class Target3d {
         targetHoodAngle = targetHoodAngleSupplier.getAsDouble();
         targetTurretAngle = targetTurretAngleSupplier.getAsDouble();
 
-        Pose2d futurePose = chassis.computeFuturePosition(CYCLE_TIME);
+        
+        ChassisSpeeds robotSpeeds = chassis.getChassisSpeedsFieldRel();
+        Pose2d futurePose = ShooterUtils.computeFuturePosition(robotSpeeds, chassis.getPose(), CYCLE_TIME);
 
         Rotation3d endRotation = new Rotation3d(
             0, 
@@ -153,7 +160,7 @@ public class Target3d {
         return new ShootingValues(
             ShooterSpeed / MOTOR_VEL_TO_BALL_VEL, 
             Math.asin(shooterValues.getZ() / ShooterSpeed), 
-            shooterValues.toTranslation2d().getAngle().getRadians() - chassis.getPose().getRotation().getRadians()
+            shooterValues.toTranslation2d().getAngle().getRadians()/* - futurePose.getRotation().getRadians()*/
         );
     }
 }
