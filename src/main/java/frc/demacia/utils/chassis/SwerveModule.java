@@ -1,10 +1,14 @@
+
 package frc.demacia.utils.chassis;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.demacia.utils.log.LogManager;
 import frc.demacia.utils.motors.MotorInterface;
+import frc.demacia.utils.motors.TalonFXMotor;
 import frc.demacia.utils.sensors.Cancoder;
 
 /**
@@ -24,9 +28,9 @@ import frc.demacia.utils.sensors.Cancoder;
  */
 public class SwerveModule {
     private SwerveModuleConfig config;
-    private MotorInterface steerMotor;
-    private MotorInterface driveMotor;
-    private Cancoder cancoder;
+    public MotorInterface steerMotor;
+    public MotorInterface driveMotor;
+    public Cancoder cancoder;
     public String name;
 
     public SwerveModule(SwerveModuleConfig config) {
@@ -132,7 +136,7 @@ public class SwerveModule {
         }
 
         setSteerPosition(steerMotor.getCurrentPosition() + diff);
-        setDriveVelocity(vel - steerMotor.getCurrentVelocity() * config.SteerVelToDriveVel);
+        setDriveVelocity(vel - steerMotor.getCurrentVelocity() * config.steerVelToDriveVel);
     }
 
     /**

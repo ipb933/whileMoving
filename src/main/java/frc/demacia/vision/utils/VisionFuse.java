@@ -14,6 +14,7 @@ import frc.demacia.vision.subsystem.Tag;
 public class VisionFuse {
 
     private Tag[] tags;
+    
 
     public VisionFuse(Tag... tags) {
         this.tags = tags;
@@ -88,10 +89,10 @@ public class VisionFuse {
 
     public Rotation2d get2dAngle() {
         // Ensure that 'tags' is not empty or has a valid index before accessing
-        if (tags != null && tags.length > 3 && tags[0].getCameraToTag() != null
-                && tags[3].getCameraToTag() != null
+        if (tags != null && tags.length > 3 && tags[0].getRobotToTagFieldRel() != null
+                && tags[3].getRobotToTagFieldRel() != null
                 && tags[0].getTagId() == tags[3].getTagId()) {
-            return tags[0].getCameraToTag().minus(tags[3].getCameraToTag())
+            return tags[0].getRobotToTagFieldRel().minus(tags[3].getRobotToTagFieldRel())
                     .getAngle().rotateBy(Rotation2d.fromDegrees(90))
                     .plus(TAG_ANGLE[tags[3].getTagId()]);
         } else {

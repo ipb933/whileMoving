@@ -27,7 +27,7 @@ public class PigeonConfig extends BaseSensorConfig<PigeonConfig>{
     public double zScalar = 1;
     public boolean compass = false;
     public boolean temperatureCompensation = false;
-    public boolean noMotionCalibration = false;
+    public boolean noMotionCalibration = true;
     
     /**
      * Creates Pigeon2 configuration.
