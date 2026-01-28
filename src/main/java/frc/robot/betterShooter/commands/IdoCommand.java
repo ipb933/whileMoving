@@ -23,7 +23,7 @@ public class IdoCommand extends Command {
         ShootingValues valuses = target3d.getShootingValues();
 
         shooter.setVelocity(0, valuses.velocity());
-        shooter.setAngle(1, valuses.hoodAngle());
+        shooter.setHoodAngle(valuses.hoodAngle());
         shooter.setAngle(2, valuses.turretAngle());
     }
 }

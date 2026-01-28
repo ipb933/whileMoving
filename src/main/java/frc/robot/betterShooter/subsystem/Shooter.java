@@ -4,11 +4,13 @@
 
 package frc.robot.betterShooter.subsystem;
 
+import edu.wpi.first.math.MathUtil;
 import frc.demacia.utils.mechanisms.BaseMechanism;
 import frc.demacia.utils.motors.MotorInterface;
 import frc.demacia.utils.motors.TalonFXMotor;
 import frc.demacia.utils.sensors.LimitSwitch;
 import frc.demacia.utils.sensors.SensorInterface;
+import frc.robot.Shooter.ShooterConstans;
 import frc.robot.betterShooter.ShooterConstans.FlyWheelConstans;
 import frc.robot.betterShooter.ShooterConstans.HoodConstans;
 import frc.robot.betterShooter.ShooterConstans.IndexerConstans;;
@@ -27,6 +29,11 @@ public class Shooter extends BaseMechanism {
     new SensorInterface[]{
       new LimitSwitch(HoodConstans.LIMIT_SWITCH_CONFIG)
     });
+  }
+
+  public void setHoodAngle(double angle){
+    angle = MathUtil.clamp(angle, ShooterConstans.MIN_ANGLE_HOOD, ShooterConstans.MAX_ANGLE_HOOD);
+    setAngle(1, angle);
   }
 
   @Override
