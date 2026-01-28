@@ -10,8 +10,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.demacia.utils.DemaciaUtils;
@@ -20,11 +18,9 @@ import frc.demacia.utils.chassis.DriveCommand;
 import frc.demacia.utils.controller.CommandController;
 import frc.demacia.utils.controller.CommandController.ControllerType;
 import frc.demacia.utils.log.LogManager;
-import frc.robot.Shooter.commands.HoodCalibrationCommand;
-import frc.robot.Shooter.subsystem.Shooter;
-import frc.robot.betterShooter.commands.ShooterCommand;
 import frc.robot.chassis.MK4iChassisConstants;
-import frc.robot.chassis.commands.ResetModule; 
+import frc.robot.shooter.commands.HoodCalibrationCommand;
+import frc.robot.shooter.subsystem.Shooter; 
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -57,9 +53,8 @@ public class RobotContainer implements Sendable {
     SmartDashboard.putData("RC", this);
     new DemaciaUtils(() -> getIsComp(), () -> getIsRed());
     chassis = new Chassis(MK4iChassisConstants.CHASSIS_CONFIG);
-    shooter = new Shooter(chassis);
+    shooter = new Shooter();
 
-    SmartDashboard.putData("chassis/Reset Module Back Left", new ResetModule(chassis, 2, 0).ignoringDisable(true));
     SmartDashboard.putData("shooter/Hood calibration", new HoodCalibrationCommand(shooter));
     // Configure the trigger bindings
     SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
@@ -86,10 +81,7 @@ public class RobotContainer implements Sendable {
   private void configureBindings() {
     DriveCommand driveCommand = new DriveCommand(chassis, driverController);
     chassis.setDefaultCommand(driveCommand);
-    driverController.rightButton().onTrue(new RunCommand(() -> {}, shooter));
-    driverController.upButton().onTrue(new InstantCommand(() -> driveCommand.setActiveToHub()));
-    driverController.downButton().onTrue(new InstantCommand(() -> shooter.setIndexerPower(1)));
-    driverController.leftBumper().onTrue(new InstantCommand(() -> shooter.setIndexerPower(0)));
+    
   }
 
   public static boolean getIsRed() {

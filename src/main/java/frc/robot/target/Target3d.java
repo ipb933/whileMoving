@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.demacia.utils.LookUpTable;
 import frc.demacia.utils.chassis.Chassis;
-import frc.robot.Shooter.utils.ShooterUtils;
 
 import static frc.robot.target.TargetConstants.*;
 
@@ -52,7 +51,7 @@ public class Target3d {
 
     private Translation2d getTurretFuturePosition(double sec) {
         ChassisSpeeds robotSpeeds = chassis.getChassisSpeedsFieldRel();
-        Pose2d futurePose = ShooterUtils.computeFuturePosition(robotSpeeds, chassis.getPose(), sec);
+        Pose2d futurePose = new Pose2d(); //TODO
         double mountingAngle = TargetConstants.SHOOTER_ANGLE_FROM_CENTER + futurePose.getRotation().getRadians();
         
         return futurePose.getTranslation().plus(new Translation2d(
@@ -70,7 +69,7 @@ public class Target3d {
         double turretAngle = TargetConstants.hubPos.minus(turretPos).getAngle().getRadians();
     
         ChassisSpeeds robotSpeeds = chassis.getChassisSpeedsFieldRel();
-        Pose2d futurePose = ShooterUtils.computeFuturePosition(robotSpeeds, chassis.getPose(), sec);
+        Pose2d futurePose = new Pose2d(); //TODO
         double chassisRotation = futurePose.getRotation().getRadians();
         return turretAngle /*- chassisRotation*/;
     }
@@ -82,7 +81,7 @@ public class Target3d {
 
         
         ChassisSpeeds robotSpeeds = chassis.getChassisSpeedsFieldRel();
-        Pose2d futurePose = ShooterUtils.computeFuturePosition(robotSpeeds, chassis.getPose(), CYCLE_TIME);
+        Pose2d futurePose = new Pose2d(); //TODO
 
         Rotation3d endRotation = new Rotation3d(
             0, 

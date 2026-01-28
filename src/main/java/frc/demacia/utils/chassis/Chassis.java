@@ -4,8 +4,6 @@
 
 package frc.demacia.utils.chassis;
 
-import java.util.List;
-
 import org.ejml.simple.SimpleMatrix;
 
 import com.ctre.phoenix6.StatusCode;
@@ -13,44 +11,31 @@ import com.ctre.phoenix6.StatusSignal;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.demacia.kinematics.DemaciaKinematics;
 import frc.demacia.odometry.DemaciaPoseEstimator;
-import frc.demacia.odometry.DemaciaPoseEstimator.OdometryObservation;
-import frc.demacia.odometry.DemaciaPoseEstimator.VisionMeasurment;
-import java.util.Optional;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.vision.VisionRunner;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.demacia.utils.Utilities;
-import frc.demacia.utils.log.LogManager;
 import frc.demacia.utils.sensors.Pigeon;
 import frc.demacia.vision.subsystem.Quest;
 import frc.demacia.vision.subsystem.Tag;
-import frc.demacia.vision.utils.LimelightHelpers;
-import frc.demacia.vision.utils.VisionFuse;
 import frc.demacia.vision.Camera;
 import frc.demacia.vision.subsystem.ObjectPose;
 import static frc.demacia.vision.utils.VisionConstants.*;
@@ -102,7 +87,6 @@ public class Chassis extends SubsystemBase {
     private DemaciaPoseEstimator demaciaPoseEstimator;
     private SwerveDrivePoseEstimator poseEstimator;
     private Field2d field;
-    private Field2d field2;
 
     public Tag[] tags;
     public Tag limelight4;
@@ -111,8 +95,6 @@ public class Chassis extends SubsystemBase {
 
     private StatusSignal<Angle> gyroYawStatus;
     private Rotation2d lastGyroYaw;
-
-    private Matrix<N3, N1> questSTD;
 
     public Chassis(ChassisConfig chassisConfig) {
         setName(getName());
@@ -141,7 +123,6 @@ public class Chassis extends SubsystemBase {
         SimpleMatrix std = new SimpleMatrix(new double[] { 0.02, 0.02, 99999999 });
         poseEstimator.setVisionMeasurementStdDevs(new Matrix<>(std));
         field = new Field2d();
-        field2 = new Field2d();
 
         // tags are not a constant so i cant(dont know) put it in chassisConfig.tags
         // tags = chassisConfig.tags;
@@ -151,7 +132,6 @@ public class Chassis extends SubsystemBase {
 
         tags = new Tag[]{limelight4};
 
-        VisionFuse visionFuse = new VisionFuse(tags);
         if (chassisConfig.objectCamera != null) {
             objectPose = new ObjectPose(
                     chassisConfig.objectCamera,
@@ -355,36 +335,6 @@ public class Chassis extends SubsystemBase {
         }
     }
 
-    private void updateVision(Pose2d pose) {
-        if (pose == null)
-            return;
-        demaciaPoseEstimator.updateVisionSTD(getSTD());
-
-        VisionMeasurment measurement = new VisionMeasurment(
-                Timer.getFPGATimestamp() - 0.05,
-                pose.getTranslation(),
-                Optional.of(pose.getRotation()));
-        demaciaPoseEstimator.addVisionMeasurement(measurement);
-    }
-
-    private void updateQuest(Pose2d questPose) {
-         demaciaPoseEstimator.updateVisionSTD(getSTDQuest());
-
-        VisionMeasurment measurement = new VisionMeasurment(
-                Timer.getFPGATimestamp(),
-                questPose.getTranslation(),
-                Optional.of(questPose.getRotation()));
-        demaciaPoseEstimator.addVisionMeasurement(measurement);
-    }
-
-    private Matrix<N3, N1> getSTDQuest() {
-        double x = 0.005;
-        double y = 0.005;
-        double theta = 0.035;
-
-        return new Matrix<N3, N1>(new SimpleMatrix(new double[] { x, y, theta }));
-    }
-
     private Matrix<N3, N1> getSTD() {
         double x = 0.05;
         double y = 0.05;
@@ -429,10 +379,6 @@ public class Chassis extends SubsystemBase {
 
     Pose2d visionFusePoseEstimation;
     Rotation2d gyroAngle;
-
-    private boolean hasVisionUpdated = false;
-
-    private Matrix<N3, N1> visionSTD = VecBuilder.fill(0.7, 0.7, Double.MAX_VALUE);
 
     @Override
     public void periodic() {

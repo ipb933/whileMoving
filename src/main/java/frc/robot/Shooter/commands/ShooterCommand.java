@@ -1,17 +1,17 @@
-package frc.robot.betterShooter.commands;
+package frc.robot.shooter.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.demacia.utils.chassis.Chassis;
 import frc.demacia.utils.log.LogManager;
 import frc.demacia.utils.log.LogEntryBuilder.LogLevel;
-import frc.robot.betterShooter.ShooterConstans;
-import frc.robot.betterShooter.subsystem.Shooter;
+import frc.robot.shooter.ShooterConstans;
+import frc.robot.shooter.subsystem.Shooter;
 import frc.robot.target.ShootingValues;
 import frc.robot.target.Target3d;
-import static frc.robot.betterShooter.ShooterConstans.FlyWheelConstans.*;
-import static frc.robot.betterShooter.ShooterConstans.HoodConstans.*;
-import static frc.robot.betterShooter.ShooterConstans.IndexerConstans.*;
-import static frc.robot.betterShooter.ShooterConstans.TurretConstans.TURRET_NAME;
+import static frc.robot.shooter.ShooterConstans.FlyWheelConstans.*;
+import static frc.robot.shooter.ShooterConstans.HoodConstans.*;
+import static frc.robot.shooter.ShooterConstans.IndexerConstans.*;
+import static frc.robot.shooter.ShooterConstans.TurretConstans.TURRET_NAME;
 
 public class ShooterCommand extends Command {
     private Shooter shooter;
