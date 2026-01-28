@@ -22,9 +22,9 @@ import frc.demacia.utils.controller.CommandController.ControllerType;
 import frc.demacia.utils.log.LogManager;
 import frc.robot.Shooter.commands.HoodCalibrationCommand;
 import frc.robot.Shooter.subsystem.Shooter;
+import frc.robot.betterShooter.commands.IdoCommand;
 import frc.robot.chassis.MK4iChassisConstants;
-import frc.robot.chassis.commands.ResetModule;
-import frc.robot.target.IdoCommand; 
+import frc.robot.chassis.commands.ResetModule; 
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -86,16 +86,7 @@ public class RobotContainer implements Sendable {
   private void configureBindings() {
     DriveCommand driveCommand = new DriveCommand(chassis, driverController);
     chassis.setDefaultCommand(driveCommand);
-    shooter.setDefaultCommand(new IdoCommand(chassis, shooter));
     driverController.rightButton().onTrue(new RunCommand(() -> {}, shooter));
-    //   RobotContainer.isShooting = !RobotContainer.isShooting;
-    //   if (isShooting) {
-    //     CommandScheduler.getInstance().schedule(new InstantCommand(() -> new ShooterCommand(shooter, chassis).schedule()));
-    //   }
-    //   else {
-    //     CommandScheduler.getInstance().schedule(new InstantCommand(() -> {}, shooter));
-    //   }
-    // }));
     driverController.upButton().onTrue(new InstantCommand(() -> driveCommand.setActiveToHub()));
     driverController.downButton().onTrue(new InstantCommand(() -> shooter.setIndexerPower(1)));
     driverController.leftBumper().onTrue(new InstantCommand(() -> shooter.setIndexerPower(0)));
