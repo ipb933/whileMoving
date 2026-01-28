@@ -39,13 +39,13 @@ public class Target3d {
         this.chassis = chassis;
         this.lookUpTable = lookUpTable;
         targetSpeedSupplier = () -> {
-            return lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[0] * MOTOR_VEL_TO_BALL_VEL;
+            return lookUpTable.get(distanceFromHubAfterTime(PREDICTING_TIME))[0] * MOTOR_VEL_TO_BALL_VEL;
         };
         targetHoodAngleSupplier = () -> {
-            return lookUpTable.get(distanceFromHubAfterTime(CYCLE_TIME))[1];
+            return lookUpTable.get(distanceFromHubAfterTime(PREDICTING_TIME))[1];
         };
         targetTurretAngleSupplier = () -> {
-            return angleFromHubAfterTime(CYCLE_TIME);
+            return angleFromHubAfterTime(PREDICTING_TIME);
         };
     }
 
@@ -153,7 +153,7 @@ public class Target3d {
             0, 
             0, 
             SPIN_CORRECTION_GAIN * (ShooterSpeed - targetSpeed) * targetSpeed *
-            targetSpeed * Math.cos(Math.asin(shooterValues.getZ() / ShooterSpeed)) *  distanceFromHubAfterTime(CYCLE_TIME)// time to be above hub 
+            targetSpeed * Math.cos(Math.asin(shooterValues.getZ() / ShooterSpeed)) *  distanceFromHubAfterTime(PREDICTING_TIME)// time to be above hub 
         ));
         ShooterSpeed = shooterValues.getNorm();
         return new ShootingValues(
