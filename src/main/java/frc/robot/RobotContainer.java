@@ -22,7 +22,7 @@ import frc.demacia.utils.controller.CommandController.ControllerType;
 import frc.demacia.utils.log.LogManager;
 import frc.robot.Shooter.commands.HoodCalibrationCommand;
 import frc.robot.Shooter.subsystem.Shooter;
-import frc.robot.betterShooter.commands.IdoCommand;
+import frc.robot.betterShooter.commands.ShooterCommand;
 import frc.robot.chassis.MK4iChassisConstants;
 import frc.robot.chassis.commands.ResetModule; 
 

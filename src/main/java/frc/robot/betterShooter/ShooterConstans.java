@@ -69,8 +69,8 @@ public class ShooterConstans {
 
         public static final TalonFXConfig HOOD_CONFIG = new TalonFXConfig(HOOD_ID, HOOD_CANBUS, HOOD_NAME)
             .withBrake(true)
-            .withRadiansMotor(HOOD_GEAR_RATIO)
             .withInvert(false)
+            .withRadiansMotor(HOOD_GEAR_RATIO)
             .withPID(HOOD_KP, HOOD_KI, HOOD_KD, HOOD_KS, HOOD_KV, HOOD_KA, HOOD_KG)
             .withMotionParam(HOOD_MAX_VELOCITY, HOOD_MAX_ACCEL, HOOD_MAX_JERK);
 
@@ -78,9 +78,46 @@ public class ShooterConstans {
         public static final double MIN_ANGLE_HOOD = Math.toRadians(45d);
 
         
+        public static final int LIMIT_SWITCH_CHANNEL = 0;
         public static final String LIMIT_SWITCH_NAME = "Limit Switch";
 
-        public static final LimitSwitchConfig LIMIT_SWITCH_CONFIG = new LimitSwitchConfig(0, LIMIT_SWITCH_NAME);
+        public static final LimitSwitchConfig LIMIT_SWITCH_CONFIG = new LimitSwitchConfig(LIMIT_SWITCH_CHANNEL, LIMIT_SWITCH_NAME);
+    }
+
+    public class TurretConstans {
+        public static final int TURRET_ID = 30;
+        public static final Canbus TURRET_CABUS = Canbus.Rio;
+        public static final String TURRET_NAME = "TURRET Motor";
+        
+        public static final double TURRET_KP = 3.5;
+        public static final double TURRET_KI = 0;
+        public static final double TURRET_KD = 0.04;
+        public static final double TURRET_KS = 0.25073;
+        public static final double TURRET_KV = 0.29;
+        public static final double TURRET_KA = 0;
+        public static final double TURRET_KG = 0;
+        public static final double TURRET_KSIN = 0;
+        public static final double TURRET_KV2 = 0.0031;
+        
+        public static final double TURRET_GEAR_RATIO = 1;
+
+        public static final TalonFXConfig TURRET_CONFIG = new TalonFXConfig(TURRET_ID, TURRET_CABUS, TURRET_NAME)
+            .withInvert(false)
+            .withBrake(true)
+            .withPID(TURRET_KP, TURRET_KI, TURRET_KD, TURRET_KS, TURRET_KV, TURRET_KA, TURRET_KG)
+            .withFeedForward(TURRET_KV2, TURRET_KSIN)
+            .withRadiansMotor(TURRET_GEAR_RATIO);
+            
+        
+        public static final String LIMIT_SWITCH_MIN_NAME = "Min Limit Switch";
+        public static final int LIMIT_SWITCH_MIN_CHANNEL = 9;
+        public static final LimitSwitchConfig LIMIT_SWITCH_MIN_CONFIG = new LimitSwitchConfig(LIMIT_SWITCH_MIN_CHANNEL, LIMIT_SWITCH_MIN_NAME); 
+        public static final String LIMIT_SWITCH_MAX_NAME = "Max Limit Switch";
+        public static final int LIMIT_SWITCH_MAX_CHANNEL = 8;
+        public static final LimitSwitchConfig LIMIT_SWITCH_MAX_CONFIG = new LimitSwitchConfig(LIMIT_SWITCH_MAX_CHANNEL, LIMIT_SWITCH_MAX_NAME); 
+
+        public static final double MAX_TURRET_ANGLE = 110;
+        public static final double MIN_TURRET_ANGLE = -110;
     }
 
     public class IndexerConstans {
@@ -91,6 +128,8 @@ public class ShooterConstans {
         public static final TalonFXConfig INDEXER_CONFIG = new TalonFXConfig(INDEXER_ID, CANBUS_MOVE_TO_SOTER_MOTOR,
             INDEXER_NAME)
             .withInvert(true);
+
+        public static final int INDEXER_VEL = 0;
     }
 
     

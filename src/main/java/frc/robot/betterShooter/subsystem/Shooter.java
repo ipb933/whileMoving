@@ -10,10 +10,10 @@ import frc.demacia.utils.motors.MotorInterface;
 import frc.demacia.utils.motors.TalonFXMotor;
 import frc.demacia.utils.sensors.LimitSwitch;
 import frc.demacia.utils.sensors.SensorInterface;
-import frc.robot.Shooter.ShooterConstans;
-import frc.robot.betterShooter.ShooterConstans.FlyWheelConstans;
-import frc.robot.betterShooter.ShooterConstans.HoodConstans;
-import frc.robot.betterShooter.ShooterConstans.IndexerConstans;;
+import static frc.robot.betterShooter.ShooterConstans.FlyWheelConstans.*;
+import static frc.robot.betterShooter.ShooterConstans.HoodConstans.*;
+import static frc.robot.betterShooter.ShooterConstans.TurretConstans.*;
+import static frc.robot.betterShooter.ShooterConstans.IndexerConstans.*;
 
 public class Shooter extends BaseMechanism {
   /** Creates a new shooter. */
@@ -22,22 +22,28 @@ public class Shooter extends BaseMechanism {
   public Shooter() {
     super("shooter", 
     new MotorInterface[]{
-      new TalonFXMotor(FlyWheelConstans.FLYWHEEL_CONFIG), 
-      new TalonFXMotor(HoodConstans.HOOD_CONFIG), 
-      new TalonFXMotor(IndexerConstans.INDEXER_CONFIG)
+      new TalonFXMotor(FLYWHEEL_CONFIG), 
+      new TalonFXMotor(HOOD_CONFIG),
+      new TalonFXMotor(null), 
+      new TalonFXMotor(INDEXER_CONFIG)
     }, 
     new SensorInterface[]{
-      new LimitSwitch(HoodConstans.LIMIT_SWITCH_CONFIG)
+      new LimitSwitch(LIMIT_SWITCH_CONFIG)
     });
   }
 
   public void setHoodAngle(double angle){
-    angle = MathUtil.clamp(angle, ShooterConstans.MIN_ANGLE_HOOD, ShooterConstans.MAX_ANGLE_HOOD);
-    setAngle(1, angle);
+    angle = MathUtil.clamp(angle, MIN_ANGLE_HOOD, MAX_ANGLE_HOOD);
+    setAngle(HOOD_NAME, angle);
+  }
+
+  public void setTurretAngle(double angle){
+    angle = MathUtil.clamp(angle, MIN_TURRET_ANGLE, MAX_TURRET_ANGLE);
+    setAngle(TURRET_NAME, angle);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+      
   }
 }
