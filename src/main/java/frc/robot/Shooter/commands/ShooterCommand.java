@@ -11,7 +11,7 @@ import frc.robot.target.Target3d;
 import static frc.robot.shooter.ShooterConstans.FlyWheelConstans.*;
 import static frc.robot.shooter.ShooterConstans.HoodConstans.*;
 import static frc.robot.shooter.ShooterConstans.IndexerConstans.*;
-import static frc.robot.shooter.ShooterConstans.TurretConstans.TURRET_NAME;
+import static frc.robot.shooter.ShooterConstans.TurretConstans.*;
 
 public class ShooterCommand extends Command {
     private Shooter shooter;

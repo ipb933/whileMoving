@@ -22,5 +22,6 @@ public class HoodCalibrationCommand extends CalibratinCommand {
     HoodConstans.MAX_ANGLE_HOOD);
     addRequirements(shooter);
     // Use addRequirements() here to declare subsystem dependencies.
+    addRequirements(shooter);
   }
 }

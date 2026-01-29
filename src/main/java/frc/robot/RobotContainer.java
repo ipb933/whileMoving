@@ -18,9 +18,17 @@ import frc.demacia.utils.chassis.DriveCommand;
 import frc.demacia.utils.controller.CommandController;
 import frc.demacia.utils.controller.CommandController.ControllerType;
 import frc.demacia.utils.log.LogManager;
+import frc.demacia.utils.mechanisms.DriveCommandMechanism;
 import frc.robot.chassis.MK4iChassisConstants;
 import frc.robot.shooter.commands.HoodCalibrationCommand;
+import frc.robot.shooter.commands.ShooterCommand;
 import frc.robot.shooter.subsystem.Shooter; 
+import static frc.robot.shooter.ShooterConstans.FlyWheelConstans.*;
+import static frc.robot.shooter.ShooterConstans.HoodConstans.*;
+import static frc.robot.shooter.ShooterConstans.IndexerConstans.*;
+import static frc.robot.shooter.ShooterConstans.TurretConstans.*;
+
+import java.util.function.DoubleSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -36,8 +44,6 @@ public class RobotContainer implements Sendable {
   public static boolean isComp = false;
   private static boolean hasRemovedFromLog = false;
   public static boolean isRed = false;
-  Field2d field2d;
-  Field2d questField2d;
   Chassis chassis;
   CommandController driverController = new CommandController(0, ControllerType.kPS5);
   Shooter shooter;
@@ -82,6 +88,28 @@ public class RobotContainer implements Sendable {
     DriveCommand driveCommand = new DriveCommand(chassis, driverController);
     chassis.setDefaultCommand(driveCommand);
     
+    driverController.upButton().onTrue(new ShooterCommand(chassis, shooter));
+    driverController.leftButton().onTrue(new HoodCalibrationCommand(shooter));
+    
+    //for finding FF vals
+    // driverController.getLeftStickMove().onTrue(
+    //   new DriveCommandMechanism(shooter, 
+    //   new String[]{HOOD_NAME, TURRET_NAME}, 
+    //   new DoubleSupplier[]{
+    //     () -> driverController.getLeftY(), 
+    //     () -> driverController.getLeftX()
+    //   })
+    // );
+    // driverController.getRightStickMove().onTrue(
+    //   new DriveCommandMechanism(shooter, 
+    //   FLYWHEEL_NAME, 
+    //   () -> driverController.getLeftX())
+    // );
+    // driverController.getRightStickMove().onTrue(
+    //   new DriveCommandMechanism(shooter, 
+    //   INDEXER_NAME, 
+    //   () -> driverController.getLeftX())
+    // );
   }
 
   public static boolean getIsRed() {
