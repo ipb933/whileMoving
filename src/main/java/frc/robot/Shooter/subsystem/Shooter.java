@@ -24,7 +24,7 @@ public class Shooter extends BaseMechanism {
     new MotorInterface[]{
       new TalonFXMotor(FLYWHEEL_CONFIG), 
       new TalonFXMotor(HOOD_CONFIG),
-      new TalonFXMotor(null), 
+      new TalonFXMotor(TURRET_CONFIG), 
       new TalonFXMotor(INDEXER_CONFIG)
     }, 
     new SensorInterface[]{
