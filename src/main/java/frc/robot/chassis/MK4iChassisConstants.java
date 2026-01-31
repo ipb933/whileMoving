@@ -65,19 +65,19 @@ public class MK4iChassisConstants {
 
             ans[i] = new SwerveModuleConfig(
                     name,
-                    new TalonFXConfig(i * 3 + 2, CAN_BUS, name + "/Steer")
+                    new TalonFXConfig(i * 3 + 2, CAN_BUS, name + " Steer")
                             .withPID(STEER_KP, STEER_KI, STEER_KD, STEER_KS, STEER_KV, STEER_KA, 0)
                             .withMotionParam(MOTION_MAGIC_VEL, MOTION_MAGIC_ACCEL, MOTION_MAGIC_JERK)
                             .withBrake(true)
                             .withInvert(false)
                             .withRadiansMotor(STEER_GEAR_RATIO)
                             .withRampTime(RAMP_TIME_STEER),
-                    new TalonFXConfig(i * 3 + 1, CAN_BUS, name + "/Drive")
+                    new TalonFXConfig(i * 3 + 1, CAN_BUS, name + " Drive")
                             .withPID(DRIVE_KP, DRIVE_KI, DRIVE_KD, DRIVE_KS, DRIVE_KV, DRIVE_KA, 0)
                             .withBrake(true)
                             .withMeterMotor(DRIVE_GEAR_RATIO, WHEEL_DIAMETER),
                     // i != 2
-                    new CancoderConfig(i * 3 + 3, CAN_BUS, name + "/Cancoder")
+                    new CancoderConfig(i * 3 + 3, CAN_BUS, name + " Cancoder")
                     // : new CancoderConfig(6, CAN_BUS, name + "Cancoder")
                     ).withPosion(
                             new Translation2d(
