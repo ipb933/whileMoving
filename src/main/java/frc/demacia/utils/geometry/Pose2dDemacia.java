@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.geometry.proto.Pose2dProto;
 import edu.wpi.first.math.geometry.struct.Pose2dStruct;
@@ -77,6 +81,27 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
   }
 
   /**
+   * Constructs a Pose2dDemacia from a WPILib Pose2d.
+   *
+   * @param pose The WPILib pose.
+   */
+  public Pose2dDemacia(Pose2d pose) {
+    m_translation = new Translation2dDemacia(pose.getTranslation());
+    m_rotation = new Rotation2dDemacia(pose.getRotation());
+  }
+
+  /**
+   * Constructs a Pose2dDemacia from WPILib Translation2d and Rotation2d.
+   *
+   * @param translation The WPILib translation.
+   * @param rotation The WPILib rotation.
+   */
+  public Pose2dDemacia(Translation2d translation, Rotation2d rotation) {
+    m_translation = new Translation2dDemacia(translation);
+    m_rotation = new Rotation2dDemacia(rotation);
+  }
+
+  /**
    * Constructs a pose with the specified affine transformation matrix.
    *
    * @param matrix The affine transformation matrix.
@@ -98,6 +123,17 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
   public Pose2dDemacia set(Pose2dDemacia other) {
     m_translation.set(other.m_translation);
     m_rotation.set(other.m_rotation);
+    return this;
+  }
+
+  /**
+   * Updates this Pose2d to match the provided WPILib Pose2d without memory allocation.
+   * @param other The WPILib pose to copy from.
+   * @return This object.
+   */
+  public Pose2dDemacia set(Pose2d other) {
+    m_translation.set(other.getTranslation());
+    m_rotation.set(other.getRotation());
     return this;
   }
   
@@ -132,6 +168,17 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
   }
 
   /**
+   * Transforms the pose by the given WPILib transformation.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib transform to transform the pose by.
+   * @return This object (modified).
+   */
+  public Pose2dDemacia plus(Transform2d other) {
+    return transformBy(other);
+  }
+
+  /**
    * Subtracts the other pose from this pose (geometric difference).
    * Effectively makes this pose relative to the other pose.
    * <b>Modifies this object.</b>
@@ -140,6 +187,18 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
    * @return This object (modified, now representing the difference).
    */
   public Pose2dDemacia minus(Pose2dDemacia other) {
+    return relativeTo(other);
+  }
+
+  /**
+   * Subtracts the other WPILib pose from this pose (geometric difference).
+   * Effectively makes this pose relative to the other pose.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib pose to subtract.
+   * @return This object (modified, now representing the difference).
+   */
+  public Pose2dDemacia minus(Pose2d other) {
     return relativeTo(other);
   }
 
@@ -237,6 +296,19 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
   }
 
   /**
+   * Rotates the pose around the origin.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib rotation to transform the pose by.
+   * @return This object (modified).
+   */
+  public Pose2dDemacia rotateBy(Rotation2d other) {
+    m_translation.rotateBy(other);
+    m_rotation.rotateBy(other);
+    return this;
+  }
+
+  /**
    * Transforms the pose by the given transformation. See + operator for
    * the matrix multiplication performed.
    * <b>Modifies this object.</b>
@@ -261,6 +333,29 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
   }
 
   /**
+   * Transforms the pose by the given WPILib transformation.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib transform to transform the pose by.
+   * @return This object (modified).
+   */
+  public Pose2dDemacia transformBy(Transform2d other) {
+    double cos = m_rotation.getCos();
+    double sin = m_rotation.getSin();
+    double tx = other.getX();
+    double ty = other.getY();
+
+    double newX = tx * cos - ty * sin;
+    double newY = tx * sin + ty * cos;
+
+    m_translation.set(m_translation.getX() + newX, m_translation.getY() + newY);
+
+    m_rotation.rotateBy(other.getRotation());
+    
+    return this;
+  }
+
+  /**
    * Updates the current pose to be relative to the given pose.
    * <b>Modifies this object.</b>
    *
@@ -268,6 +363,30 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
    * @return This object (modified, now relative to other).
    */
   public Pose2dDemacia relativeTo(Pose2dDemacia other) {
+    double dx = m_translation.getX() - other.getX();
+    double dy = m_translation.getY() - other.getY();
+    
+    double c = other.getRotation().getCos();
+    double s = other.getRotation().getSin();
+
+    double newX = dx * c + dy * s;
+    double newY = dx * -s + dy * c;
+
+    m_translation.set(newX, newY);
+
+    m_rotation.minus(other.getRotation());
+
+    return this;
+  }
+
+  /**
+   * Updates the current pose to be relative to the given WPILib pose.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib pose that is the origin of the new coordinate frame.
+   * @return This object (modified, now relative to other).
+   */
+  public Pose2dDemacia relativeTo(Pose2d other) {
     double dx = m_translation.getX() - other.getX();
     double dy = m_translation.getY() - other.getY();
     
@@ -361,7 +480,10 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
    * @return The twist that maps this to end.
    */
   public Twist2d log(Pose2dDemacia end) {
-    final var transform = end.relativeTo(this);
+    // Create a temporary Pose2dDemacia to avoid modifying the 'end' parameter during relativeTo
+    final var transform = new Pose2dDemacia(end.getX(), end.getY(), new Rotation2dDemacia(end.getRotation().getRadians()));
+    transform.relativeTo(this);
+
     final var dtheta = transform.getRotation().getRadians();
     final var halfDtheta = dtheta / 2.0;
 
@@ -450,12 +572,22 @@ public class Pose2dDemacia implements Interpolatable<Pose2dDemacia>, ProtobufSer
     if (t < 0) {
       return this;
     } else if (t >= 1) {
-      return endValue;
+      return this.set(endValue);
     } else {
       var twist = this.log(endValue);
       var scaledTwist = new Twist2d(twist.dx * t, twist.dy * t, twist.dtheta * t);
       return this.exp(scaledTwist);
     }
+  }
+
+  /**
+   * Bridges this mutable Pose2dDemacia to an immutable WPILib Pose2d.
+   * This allocates memory! Use only when needed for WPILib's internal trajectory/kinematics methods.
+   *
+   * @return A new WPILib Pose2d object with the same translation and rotation.
+   */
+  public Pose2d getPose2d() {
+    return new Pose2d(m_translation.getTranslation2d(), m_rotation.getRotation2d());
   }
 
   /** Pose2d protobuf for serialization. */

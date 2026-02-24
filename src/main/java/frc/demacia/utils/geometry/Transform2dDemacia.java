@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.proto.Transform2dProto;
 import edu.wpi.first.math.geometry.struct.Transform2dStruct;
 import edu.wpi.first.math.numbers.N3;
@@ -26,6 +30,12 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
 
   private final Translation2dDemacia m_translation;
   private final Rotation2dDemacia m_rotation;
+
+  /** Constructs the identity transform -- maps an initial pose to itself. */
+  public Transform2dDemacia() {
+    m_translation = new Translation2dDemacia();
+    m_rotation = new Rotation2dDemacia();
+  }
 
   /**
    * Constructs the transform that maps the initial pose to the final pose.
@@ -51,6 +61,27 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
   }
 
   /**
+   * Constructs the transform that maps the initial WPILib pose to the final WPILib pose.
+   *
+   * @param initial The initial WPILib pose for the transformation.
+   * @param last The final WPILib pose for the transformation.
+   */
+  public Transform2dDemacia(Pose2d initial, Pose2d last) {
+    // 1. Calculate translation difference (last - initial)
+    m_translation = new Translation2dDemacia(last.getTranslation());
+    m_translation.minus(new Translation2dDemacia(initial.getTranslation()));
+
+    // 2. Rotate delta by -initial.rotation
+    Rotation2dDemacia initialRotInv = new Rotation2dDemacia(initial.getRotation());
+    initialRotInv.unaryMinus();
+    m_translation.rotateBy(initialRotInv);
+
+    // 3. Calculate rotation difference
+    m_rotation = new Rotation2dDemacia(last.getRotation());
+    m_rotation.minus(new Rotation2dDemacia(initial.getRotation()));
+  }
+
+  /**
    * Constructs a transform with the given translation and rotation components.
    *
    * @param translation Translational component of the transform.
@@ -62,6 +93,27 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
       @JsonProperty(required = true, value = "rotation") Rotation2dDemacia rotation) {
     m_translation = translation;
     m_rotation = rotation;
+  }
+
+  /**
+   * Constructs a Transform2dDemacia from WPILib Translation2d and Rotation2d.
+   *
+   * @param translation The WPILib translation.
+   * @param rotation The WPILib rotation.
+   */
+  public Transform2dDemacia(Translation2d translation, Rotation2d rotation) {
+    m_translation = new Translation2dDemacia(translation);
+    m_rotation = new Rotation2dDemacia(rotation);
+  }
+
+  /**
+   * Constructs a Transform2dDemacia from a WPILib Transform2d.
+   *
+   * @param transform The WPILib transform.
+   */
+  public Transform2dDemacia(Transform2d transform) {
+    m_translation = new Translation2dDemacia(transform.getTranslation());
+    m_rotation = new Rotation2dDemacia(transform.getRotation());
   }
 
   /**
@@ -102,12 +154,6 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
     }
   }
 
-  /** Constructs the identity transform -- maps an initial pose to itself. */
-  public Transform2dDemacia() {
-    m_translation = new Translation2dDemacia();
-    m_rotation = new Rotation2dDemacia();
-  }
-
   /**
    * Updates this Transform2d to match the provided one without memory allocation.
    * @param other The transform to copy from.
@@ -116,6 +162,17 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
   public Transform2dDemacia set(Transform2dDemacia other) {
     m_translation.set(other.m_translation);
     m_rotation.set(other.m_rotation);
+    return this;
+  }
+
+  /**
+   * Updates this Transform2d to match the provided WPILib Transform2d without memory allocation.
+   * @param other The WPILib transform to copy from.
+   * @return This object.
+   */
+  public Transform2dDemacia set(Transform2d other) {
+    m_translation.set(other.getTranslation());
+    m_rotation.set(other.getRotation());
     return this;
   }
 
@@ -160,6 +217,24 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
     m_translation.plus(otherTrans);
     
     // R_new = R_this + R_other
+    m_rotation.plus(other.getRotation());
+    
+    return this;
+  }
+
+  /**
+   * Composes two transformations. The second WPILib transform is applied relative to the orientation of
+   * the first.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib transform to compose with this one.
+   * @return This object (modified).
+   */
+  public Transform2dDemacia plus(Transform2d other) {
+    Translation2dDemacia otherTrans = new Translation2dDemacia(other.getTranslation().getX(), other.getTranslation().getY());
+    otherTrans.rotateBy(m_rotation);
+    
+    m_translation.plus(otherTrans);
     m_rotation.plus(other.getRotation());
     
     return this;
@@ -260,6 +335,16 @@ public class Transform2dDemacia implements ProtobufSerializable, StructSerializa
     m_translation.rotateBy(m_rotation);
     
     return this;
+  }
+
+  /**
+   * Bridges this mutable Transform2dDemacia to an immutable WPILib Transform2d.
+   * This allocates memory! Use only when needed for WPILib's internal trajectory/kinematics methods.
+   *
+   * @return A new WPILib Transform2d object with the same translation and rotation.
+   */
+  public Transform2d getTransform2d() {
+    return new Transform2d(m_translation.getTranslation2d(), m_rotation.getRotation2d());
   }
 
   @Override

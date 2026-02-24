@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.proto.Translation2dProto;
 import edu.wpi.first.math.geometry.struct.Translation2dStruct;
 import edu.wpi.first.math.interpolation.Interpolatable;
@@ -90,6 +92,15 @@ public class Translation2dDemacia
   }
 
   /**
+   * Constructs a Translation2dDemacia from a WPILib Translation2d.
+   *
+   * @param translation The WPILib translation.
+   */
+  public Translation2dDemacia(Translation2d translation) {
+    this(translation.getX(), translation.getY());
+  }
+
+  /**
    * Updates this Translation2d to match the provided one without memory allocation
    * and without strict trigonometry recalculations.
    *
@@ -99,6 +110,18 @@ public class Translation2dDemacia
   public Translation2dDemacia set(Translation2dDemacia other) {
     m_x = other.m_x;
     m_y = other.m_y;
+    return this;
+  }
+
+  /**
+   * Updates this Translation2d to match the provided one without memory allocation.
+   *
+   * @param other The WPILib Translation2d to copy from.
+   * @return This object.
+   */
+  public Translation2dDemacia set(Translation2d other) {
+    m_x = other.getX();
+    m_y = other.getY();
     return this;
   }
 
@@ -125,6 +148,16 @@ public class Translation2dDemacia
    */
   public double getDistance(Translation2dDemacia other) {
     return Math.hypot(other.m_x - m_x, other.m_y - m_y);
+  }
+
+  /**
+   * Calculates the distance between two translations in 2D space.
+   *
+   * @param other The WPILib translation to compute the distance to.
+   * @return The distance between the two translations.
+   */
+  public double getDistance(Translation2d other) {
+    return Math.hypot(other.getX() - m_x, other.getY() - m_y);
   }
 
   /**
@@ -243,6 +276,20 @@ public class Translation2dDemacia
   }
 
   /**
+   * Applies a rotation to the translation in 2D space.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The WPILib rotation to rotate the translation by.
+   * @return This object (modified).
+   */
+  public Translation2dDemacia rotateBy(Rotation2d other) {
+    double x = m_x;
+    m_x = x * other.getCos() - m_y * other.getSin();
+    m_y = x * other.getSin() + m_y * other.getCos();
+    return this;
+  }
+
+  /**
    * Rotates this translation around another translation in 2D space.
    * <b>Modifies this object.</b>
    *
@@ -300,6 +347,19 @@ public class Translation2dDemacia
   }
 
   /**
+   * Adds the other WPILib translation to this translation in 2D space.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The translation to add.
+   * @return This object (modified).
+   */
+  public Translation2dDemacia plus(Translation2d other) {
+    m_x = m_x + other.getX();
+    m_y = m_y + other.getY();
+    return this;
+  }
+
+  /**
    * Subtracts the other translation from this translation.
    * <b>Modifies this object.</b>
    *
@@ -311,6 +371,19 @@ public class Translation2dDemacia
   public Translation2dDemacia minus(Translation2dDemacia other) {
     m_x = m_x - other.m_x;
     m_y = m_y - other.m_y;
+    return this;
+  }
+
+  /**
+   * Subtracts the other WPILib translation from this translation.
+   * <b>Modifies this object.</b>
+   *
+   * @param other The translation to subtract.
+   * @return This object (modified).
+   */
+  public Translation2dDemacia minus(Translation2d other) {
+    m_x = m_x - other.getX();
+    m_y = m_y - other.getY();
     return this;
   }
 
@@ -392,9 +465,19 @@ public class Translation2dDemacia
 
   @Override
   public Translation2dDemacia interpolate(Translation2dDemacia endValue, double t) {
-    return new Translation2dDemacia(
-        MathUtil.interpolate(this.getX(), endValue.getX(), t),
-        MathUtil.interpolate(this.getY(), endValue.getY(), t));
+    m_x = MathUtil.interpolate(this.m_x, endValue.m_x, t);
+    m_y = MathUtil.interpolate(this.m_y, endValue.m_y, t);
+    return this;
+  }
+
+  /**
+   * Bridges this mutable Translation2dDemacia to an immutable WPILib Translation2d.
+   * This allocates memory! Use only when needed for WPILib's internal trajectory/kinematics methods.
+   *
+   * @return A new WPILib Translation2d object with the same coordinates.
+   */
+  public Translation2d getTranslation2d() {
+    return new Translation2d(m_x, m_y);
   }
 
   /** Translation2d protobuf for serialization. */

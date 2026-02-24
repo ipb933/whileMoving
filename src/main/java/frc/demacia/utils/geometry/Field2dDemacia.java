@@ -33,7 +33,7 @@ public class Field2dDemacia implements NTSendable, AutoCloseable {
   @SuppressWarnings("this-escape")
   public Field2dDemacia() {
     FieldObject2dDemacia obj = new FieldObject2dDemacia("Robot");
-    obj.setPose(Pose2d.kZero);
+    obj.setPose(new Pose2dDemacia());
     m_objects.add(obj);
     SendableRegistry.add(this, "Field");
   }
@@ -55,6 +55,15 @@ public class Field2dDemacia implements NTSendable, AutoCloseable {
   }
 
   /**
+   * Set the robot pose from a Pose object.
+   *
+   * @param pose 2D pose
+   */
+  public synchronized void setRobotPose(Pose2dDemacia pose) {
+    m_objects.get(0).setPose(pose);
+  }
+
+  /**
    * Set the robot pose from x, y, and rotation.
    *
    * @param xMeters X location, in meters
@@ -62,6 +71,17 @@ public class Field2dDemacia implements NTSendable, AutoCloseable {
    * @param rotation rotation
    */
   public synchronized void setRobotPose(double xMeters, double yMeters, Rotation2d rotation) {
+    m_objects.get(0).setPose(xMeters, yMeters, rotation);
+  }
+
+  /**
+   * Set the robot pose from x, y, and rotation.
+   *
+   * @param xMeters X location, in meters
+   * @param yMeters Y location, in meters
+   * @param rotation rotation
+   */
+  public synchronized void setRobotPose(double xMeters, double yMeters, Rotation2dDemacia rotation) {
     m_objects.get(0).setPose(xMeters, yMeters, rotation);
   }
 
@@ -77,11 +97,22 @@ public class Field2dDemacia implements NTSendable, AutoCloseable {
   }
 
   /**
+   * Set the robot pose from x, y, and rotation.
+   *
+   * @param x X location
+   * @param y Y location
+   * @param rotation rotation
+   */
+  public synchronized void setRobotPose(Distance x, Distance y, Rotation2dDemacia rotation) {
+    m_objects.get(0).setPose(x.in(Meters), y.in(Meters), rotation);
+  }
+
+  /**
    * Get the robot pose.
    *
    * @return 2D pose
    */
-  public synchronized Pose2d getRobotPose() {
+  public synchronized Pose2dDemacia getRobotPose() {
     return m_objects.get(0).getPose();
   }
 
