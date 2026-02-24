@@ -39,7 +39,7 @@ public class TalonSRXMotor extends TalonSRX implements MotorInterface {
         configMotor();
         addLog();
         setName(name);
-        SmartDashboard.putData(name, this);
+        // SmartDashboard.putData(name, this);
         LogManager.log(name + " motor initialized");
     }
 
@@ -72,16 +72,16 @@ public class TalonSRXMotor extends TalonSRX implements MotorInterface {
     /** Configures the logging entries for this motor */
     @SuppressWarnings("unchecked")
     private void addLog() {
-      LogManager.addEntry(name + ": position, Velocity, Acceleration, Voltage, Current, CloseLoopError, CloseLoopSP", 
-        () -> getCurrentPosition(),
-        () -> getCurrentVelocity(),
-        () -> getCurrentAcceleration(),
-        () -> getCurrentVoltage(),
-        () -> getCurrentCurrent(),
-        () -> getCurrentClosedLoopError(),
-        () -> getCurrentClosedLoopSP()
-        ).withLogLevel(LogLevel.LOG_ONLY_NOT_IN_COMP)
-        .withIsMotor().build();
+    //   LogManager.addEntry(name + ": position, Velocity, Acceleration, Voltage, Current, CloseLoopError, CloseLoopSP", 
+    //     () -> getCurrentPosition(),
+    //     () -> getCurrentVelocity(),
+    //     () -> getCurrentAcceleration(),
+    //     () -> getCurrentVoltage(),
+    //     () -> getCurrentCurrent(),
+    //     () -> getCurrentClosedLoopError(),
+    //     () -> getCurrentClosedLoopSP()
+    //     ).withLogLevel(LogLevel.LOG_ONLY_NOT_IN_COMP)
+    //     .withIsMotor().build();
     }
 
     @Override
@@ -134,7 +134,7 @@ public class TalonSRXMotor extends TalonSRX implements MotorInterface {
     }
 
     @Override
-    public void setVelocityWithAcceleratoin(double velocity, Supplier<Double> wantedAccelerationSupplier) {
+    public void setVelocityWithAcceleration(double velocity, Supplier<Double> wantedAccelerationSupplier) {
         setVelocity(velocity, wantedAccelerationSupplier.get() * config.pid[slot].kA());
     }
 

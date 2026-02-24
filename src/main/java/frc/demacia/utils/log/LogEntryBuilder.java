@@ -33,6 +33,7 @@ public class LogEntryBuilder<T> {
     private String metadata = "";
     private boolean isSeparated = false;
     private Data<T> data;
+    private boolean isRio = true;
     
     /**
      * Creates a builder for Phoenix6 StatusSignals.
@@ -80,9 +81,14 @@ public class LogEntryBuilder<T> {
      * Convenience method to set metadata to "motor".
      * @return The builder instance
      */
-    public LogEntryBuilder<T> withIsMotor() {
+    public LogEntryBuilder<T> withIsMotor(boolean isRio) {
         this.metadata = "motor";
+        this.isRio = isRio;
         return this;
+    }
+
+    public LogEntryBuilder<T> withIsMotor() {
+        return withIsMotor(true);
     }
 
     /**
@@ -109,7 +115,7 @@ public class LogEntryBuilder<T> {
             return null;
         }
         
-        LogEntry<T> entry = LogManager.add(name, data, logLevel, metadata, isSeparated);
+        LogEntry<T> entry = LogManager.add(name, data, logLevel, metadata, isSeparated, isRio);
         return entry;
     }
 }

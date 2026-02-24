@@ -2,7 +2,12 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.shooter.subsystem;
+package frc.robot.Shooter.subsystem;
+
+import static frc.robot.Shooter.ShooterConstans.FlyWheelConstans.*;
+import static frc.robot.Shooter.ShooterConstans.HoodConstans.*;
+import static frc.robot.Shooter.ShooterConstans.IndexerConstans.*;
+import static frc.robot.Shooter.ShooterConstans.TurretConstans.*;
 
 import edu.wpi.first.math.MathUtil;
 import frc.demacia.utils.mechanisms.BaseMechanism;
@@ -10,10 +15,6 @@ import frc.demacia.utils.motors.MotorInterface;
 import frc.demacia.utils.motors.TalonFXMotor;
 import frc.demacia.utils.sensors.LimitSwitch;
 import frc.demacia.utils.sensors.SensorInterface;
-import static frc.robot.shooter.ShooterConstans.FlyWheelConstans.*;
-import static frc.robot.shooter.ShooterConstans.HoodConstans.*;
-import static frc.robot.shooter.ShooterConstans.TurretConstans.*;
-import static frc.robot.shooter.ShooterConstans.IndexerConstans.*;
 
 public class Shooter extends BaseMechanism {
   /** Creates a new shooter. */

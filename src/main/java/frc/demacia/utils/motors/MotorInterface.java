@@ -72,7 +72,7 @@ public interface MotorInterface extends Sendable {
      * @param velocity The target velocity
      * @param wantedAccelerationSupplier The supplier for the acceleration
      */
-    void setVelocityWithAcceleratoin(double velocity, Supplier<Double> wantedAccelerationSupplier);
+    void setVelocityWithAcceleration(double velocity, Supplier<Double> wantedAccelerationSupplier);
 
     /**
      * Sets the target position using Motion Magic.

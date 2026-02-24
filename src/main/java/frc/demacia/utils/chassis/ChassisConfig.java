@@ -1,8 +1,8 @@
 package frc.demacia.utils.chassis;
 
 import frc.demacia.utils.sensors.PigeonConfig;
-import frc.demacia.vision.subsystem.Tag;
 import frc.demacia.vision.Camera;
+import frc.demacia.vision.TagPose;
 
 /**
  * Configuration class for swerve drive chassis.
@@ -22,7 +22,7 @@ public class ChassisConfig {
 
     public final PigeonConfig pigeonConfig;
 
-    public Tag[] tags;
+    public TagPose[] tags;
     public Camera objectCamera;
 
     public double cycleDt = 0.02;
@@ -34,10 +34,10 @@ public class ChassisConfig {
     public double maxDeltaVelocity = maxLinearAccel * cycleDt;
     public double maxVelocityToIgnoreRadius = maxRadius * maxOmegaVelocity;
     public double minVelocity = 1.5;
-    public double maxDriveVelocity = 4;
+    public double maxDriveVelocity = 5;
     public double maxRotationalVelocity = 4;
 
-    public ChassisConfig(String name, SwerveModuleConfig[] swerveModuleConfigs, PigeonConfig pigeonConfig, Tag[] tags) {
+    public ChassisConfig(String name, SwerveModuleConfig[] swerveModuleConfigs, PigeonConfig pigeonConfig, TagPose[] tags) {
         this.name = name;
         this.swerveModuleConfig = swerveModuleConfigs;
         this.pigeonConfig = pigeonConfig;

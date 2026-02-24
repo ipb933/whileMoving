@@ -204,7 +204,7 @@ public class LogManager extends SubsystemBase {
    * @param isSeparated Whether to force a separate entry
    * @return The created or updated LogEntry
    */
-  public static <T> LogEntry<T> add(String name, Data<T> data, LogLevel logLevel, String metaData, boolean isSeparated) {
+  public static <T> LogEntry<T> add(String name, Data<T> data, LogLevel logLevel, String metaData, boolean isSeparated, boolean isRio) {
     LogEntry<T> entry = null;
 
     int categoryIndex = logManager.getCategoryIndex(data, logLevel, isSeparated);
@@ -213,10 +213,14 @@ public class LogManager extends SubsystemBase {
       entry = new LogEntry<T>(name, data, logLevel, metaData);
       logManager.individualLogEntries.add(entry);
     } else{
-      entry = logManager.addToEntryArray(categoryIndex, name, logLevel, data, metaData);
+      entry = logManager.addToEntryArray(categoryIndex, name, logLevel, data, metaData, isRio);
     }
 
     return entry;
+  }
+
+  public static <T> LogEntry<T> add(String name, Data<T> data, LogLevel logLevel, String metaData, boolean isSeparated) {
+    return add(name, data, logLevel, metaData, isSeparated, true);
   }
 
   /**
@@ -230,11 +234,11 @@ public class LogManager extends SubsystemBase {
    * @return The LogEntry
    */
   @SuppressWarnings("unchecked")
-  private <T> LogEntry<T> addToEntryArray(int i, String name, LogLevel logLevel, Data<T> data, String metaData) {
+  private <T> LogEntry<T> addToEntryArray(int i, String name, LogLevel logLevel, Data<T> data, String metaData, boolean isRio) {
     if (categoryLogEntries[i] != null && categoryLogEntries[i].getData() != null) {
       if ((categoryLogEntries[i].getData().getSignalArray() != null) != (data.getSignalArray() != null)) {
           LogManager.log("Log Type Mismatch in '" + name + "'. Creating separate entry.", AlertType.kWarning);
-          return add(name, data, LogLevel.LOG_ONLY, metaData, true);
+          return add(name, data, LogLevel.LOG_ONLY, metaData, true, isRio);
       }
     }
     
@@ -242,13 +246,17 @@ public class LogManager extends SubsystemBase {
         categoryLogEntries[i] = new LogEntry<>(name, data, logLevel, metaData);
     } else {
         try {
-            ((LogEntry<T>) categoryLogEntries[i]).addData(name, data, metaData);
+            ((LogEntry<T>) categoryLogEntries[i]).addData(name, data, metaData, isRio);
         } catch (Exception e) {
             LogManager.log("Error combining log entries: " + e.getMessage(), AlertType.kError);
         }
     }
     
     return (LogEntry<T>) categoryLogEntries[i];
+  }
+
+  public <T> LogEntry<T> addToEntryArray(int i, String name, LogLevel logLevel, Data<T> data, String metaData) {
+    return addToEntryArray(i, name, logLevel, data, metaData, true);
   }
 
   /**

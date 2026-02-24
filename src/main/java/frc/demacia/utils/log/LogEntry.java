@@ -23,8 +23,8 @@ import edu.wpi.first.util.datalog.FloatLogEntry;
 import edu.wpi.first.util.datalog.StringArrayLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
 import frc.demacia.utils.Data;
-import frc.demacia.utils.DemaciaUtils;
 import frc.demacia.utils.log.LogEntryBuilder.LogLevel;
+import frc.robot.RobotCommon;
 
 /**
  * Represents a single log entry of a specific type (T).
@@ -82,7 +82,7 @@ public class LogEntry<T> {
         createLogEntry(LogManager.log, name, metaData);
 
         // Check if we should publish to NetworkTables based on LogLevel and Competition state
-        if (logLevel == LogLevel.LOG_AND_NT || (logLevel == LogLevel.LOG_AND_NT_NOT_IN_COMP && !DemaciaUtils.getIsComp())) {
+        if (logLevel == LogLevel.LOG_AND_NT || (logLevel == LogLevel.LOG_AND_NT_NOT_IN_COMP && !RobotCommon.isComp)) {
             createPublisher(LogManager.table, name);
         } else {
             ntPublisher = null;
@@ -238,15 +238,19 @@ public class LogEntry<T> {
      * @param data The new data to add
      * @param metaData The metadata to append
      */
-    public void addData(String name, Data<T> data, String metaData){
+    public void addData(String name, Data<T> data, String metaData, boolean isRio){
         this.name = this.name + " | " + name;
         this.metaData = this.metaData + " | " + metaData;
         if (this.data.getSignalArray() != null){
-            this.data.expandWithSignals(data.getSignalArray());
+            this.data.expandWithSignals(data.getSignalArray(), isRio);
         } else {
             this.data.expandWithSuppliers(data.getSupplierArray());
         }
 
         initializeLogging();
+    }
+
+    public void addData(String name, Data<T> data, String metaData){
+        addData(name, data, metaData, true);
     }
 }

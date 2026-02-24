@@ -2,26 +2,20 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.chassis;
+package frc.robot.turret.TurretCommands;
 
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.demacia.utils.chassis.Chassis;
+import frc.demacia.utils.controller.CommandController;
+import frc.robot.turret.Turret;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class TestModulePID extends Command {
-  Chassis chassis;
-  double angle = 0;
-  public TestModulePID(Chassis chassis) {
-    this.chassis = chassis;
-    addRequirements(chassis);
-    SmartDashboard.putData(this);
-  }
-
-  @Override
-  public void initSendable(SendableBuilder builder) {
-      builder.addDoubleProperty("TestModulePID/angle", ()->angle, (x)->angle=x);
+public class TurretPower extends Command {
+  Turret turret;
+  CommandController controller;
+  public TurretPower(CommandController controller) {
+    this.turret = Turret.getInstance();
+    this.controller = controller;
+    addRequirements(turret);
   }
 
   // Called when the command is initially scheduled.
@@ -31,7 +25,7 @@ public class TestModulePID extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    chassis.setSteerPositions(Math.toRadians(angle));
+    turret.setPower(controller.getLeftY() * 0.8);
   }
 
   // Called once the command ends or is interrupted.

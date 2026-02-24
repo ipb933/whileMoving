@@ -11,6 +11,7 @@ import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.proto.Rotation2dProto;
 import edu.wpi.first.math.geometry.struct.Rotation2dStruct;
 import edu.wpi.first.math.interpolation.Interpolatable;
@@ -32,15 +33,15 @@ import java.util.Objects;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Rotation2d
-    implements Interpolatable<Rotation2d>, ProtobufSerializable, StructSerializable {
+public class Rotation2dDemacia
+    implements Interpolatable<Rotation2dDemacia>, ProtobufSerializable, StructSerializable {
   
   private double m_value;
   private double m_cos;
   private double m_sin;
 
   /** Constructs a Rotation2d with a default angle of 0 degrees. */
-  public Rotation2d() {
+  public Rotation2dDemacia() {
     m_value = 0.0;
     m_cos = 1.0;
     m_sin = 0.0;
@@ -52,7 +53,7 @@ public class Rotation2d
    * @param value The value of the angle in radians.
    */
   @JsonCreator
-  public Rotation2d(@JsonProperty(required = true, value = "radians") double value) {
+  public Rotation2dDemacia(@JsonProperty(required = true, value = "radians") double value) {
     m_value = value;
     m_cos = Math.cos(value);
     m_sin = Math.sin(value);
@@ -64,7 +65,7 @@ public class Rotation2d
    * @param x The x component or cosine of the rotation.
    * @param y The y component or sine of the rotation.
    */
-  public Rotation2d(double x, double y) {
+  public Rotation2dDemacia(double x, double y) {
     double magnitude = Math.hypot(x, y);
     if (magnitude > 1e-6) {
       m_cos = x / magnitude;
@@ -83,7 +84,7 @@ public class Rotation2d
    *
    * @param angle The angle of the rotation.
    */
-  public Rotation2d(Angle angle) {
+  public Rotation2dDemacia(Angle angle) {
     this(angle.in(Radians));
   }
 
@@ -93,7 +94,7 @@ public class Rotation2d
    * @param rotationMatrix The rotation matrix.
    * @throws IllegalArgumentException if the rotation matrix isn't special orthogonal.
    */
-  public Rotation2d(Matrix<N2, N2> rotationMatrix) {
+  public Rotation2dDemacia(Matrix<N2, N2> rotationMatrix) {
     final var R = rotationMatrix;
 
     // Require that the rotation matrix is special orthogonal. This is true if
@@ -121,16 +122,81 @@ public class Rotation2d
   }
 
   /**
+   * Constructs a Rotation2dDemacia with the given Rotation2d.
+   *
+   * @param Rotation2d The Rotation2d to create this Rotation2dDemacia.
+   */
+  public Rotation2dDemacia(Rotation2d rotation2d) {
+    this(rotation2d.getRotations());
+  }
+
+  /**
    * Updates this Rotation2d to match the provided one without memory allocation
    * and without strict trigonometry recalculations.
    *
    * @param other The rotation to copy from.
    * @return This object.
    */
-  public Rotation2d set(Rotation2d other) {
+  public Rotation2dDemacia set(Rotation2dDemacia other) {
     m_value = other.m_value;
     m_cos = other.m_cos;
     m_sin = other.m_sin;
+    return this;
+  }
+
+  /**
+   * Updates this Rotation2d to match the provided one.
+   *
+   * @param other The rotation to copy from.
+   * @return This object.
+   */
+  public Rotation2dDemacia set(Rotation2d other) {
+    m_value = other.getRadians();
+    m_cos = other.getCos();
+    m_sin = other.getSin();
+    return this;
+  }
+  
+  /**
+   * 
+   * Updates this Rotation2d to the provided radians.
+   *
+   * @param other The rotation to copy from.
+   * @return This object.
+   */
+  public Rotation2dDemacia setRadians(double radians) {
+    m_value = radians;
+    m_cos = Math.cos(radians);
+    m_sin = Math.sin(radians);
+    return this;
+  }
+
+  /**
+   * Updates this Rotation2d to the provided degrees.
+   *
+   * @param other The rotation to copy from.
+   * @return This object.
+   */
+  public Rotation2dDemacia setDegrees(double degrees) {
+    return setRadians(Math.toRadians(degrees));
+  }
+
+  /**
+   * Updates this Rotation2d to the provided x and y.
+   *
+   * @param other The rotation to copy from.
+   * @return This object.
+   */
+  public Rotation2dDemacia setComponents(double x, double y) {
+    double magnitude = Math.hypot(x, y);
+    if (magnitude > 1e-6) {
+      m_cos = x / magnitude;
+      m_sin = y / magnitude;
+    } else {
+      m_cos = 1.0;
+      m_sin = 0.0;
+    }
+    m_value = Math.atan2(m_sin, m_cos);
     return this;
   }
 
@@ -140,8 +206,8 @@ public class Rotation2d
    * @param radians The value of the angle in radians.
    * @return The rotation object with the desired angle value.
    */
-  public static Rotation2d fromRadians(double radians) {
-    return new Rotation2d(radians);
+  public static Rotation2dDemacia fromRadians(double radians) {
+    return new Rotation2dDemacia(radians);
   }
 
   /**
@@ -150,8 +216,8 @@ public class Rotation2d
    * @param degrees The value of the angle in degrees.
    * @return The rotation object with the desired angle value.
    */
-  public static Rotation2d fromDegrees(double degrees) {
-    return new Rotation2d(Math.toRadians(degrees));
+  public static Rotation2dDemacia fromDegrees(double degrees) {
+    return new Rotation2dDemacia(Math.toRadians(degrees));
   }
 
   /**
@@ -160,8 +226,8 @@ public class Rotation2d
    * @param rotations The value of the angle in rotations.
    * @return The rotation object with the desired angle value.
    */
-  public static Rotation2d fromRotations(double rotations) {
-    return new Rotation2d(Units.rotationsToRadians(rotations));
+  public static Rotation2dDemacia fromRotations(double rotations) {
+    return new Rotation2dDemacia(Units.rotationsToRadians(rotations));
   }
 
   /**
@@ -174,9 +240,24 @@ public class Rotation2d
    * @param other The rotation to add.
    * @return This object (modified).
    */
-  public Rotation2d plus(Rotation2d other) {
+  public Rotation2dDemacia plus(Rotation2dDemacia other) {
     return rotateBy(other);
   }
+
+  /**
+   * Adds two rotations together, with the result being bounded between -π and π.
+   * <b>Modifies this object.</b>
+   *
+   * <p>For example, <code>Rotation2d.fromDegrees(30).plus(Rotation2d.fromDegrees(60))</code> equals
+   * <code>Rotation2d(Math.PI/2.0)</code>
+   *
+   * @param other The rotation to add.
+   * @return This object (modified).
+   */
+  public Rotation2dDemacia plus(Rotation2d other) {
+    return rotateBy(other);
+  }
+  
 
   /**
    * Subtracts the new rotation from the current rotation.
@@ -188,9 +269,37 @@ public class Rotation2d
    * @param other The rotation to subtract.
    * @return This object (modified).
    */
-  public Rotation2d minus(Rotation2d other) {
+  public Rotation2dDemacia minus(Rotation2dDemacia other) {
     double x = m_cos * other.m_cos + m_sin * other.m_sin;
     double y = m_sin * other.m_cos - m_cos * other.m_sin;
+    double magnitude = Math.hypot(x, y);
+    if (magnitude > 1e-6) {
+      m_cos = x / magnitude;
+      m_sin = y / magnitude;
+    } else {
+      m_cos = 1.0;
+      m_sin = 0.0;
+      MathSharedStore.reportError(
+          "x and y components of Rotation2d are zero\n", Thread.currentThread().getStackTrace());
+    }
+    m_value = Math.atan2(m_sin, m_cos);
+    return this;
+  }
+  
+
+  /**
+   * Subtracts the new rotation from the current rotation.
+   * <b>Modifies this object.</b>
+   *
+   * <p>For example, <code>Rotation2d.fromDegrees(10).minus(Rotation2d.fromDegrees(100))</code>
+   * equals <code>Rotation2d(-Math.PI/2.0)</code>
+   *
+   * @param other The rotation to subtract.
+   * @return This object (modified).
+   */
+  public Rotation2dDemacia minus(Rotation2d other) {
+    double x = m_cos * other.getCos() + m_sin * other.getSin();
+    double y = m_sin * other.getCos() - m_cos * other.getSin();
     double magnitude = Math.hypot(x, y);
     if (magnitude > 1e-6) {
       m_cos = x / magnitude;
@@ -211,7 +320,7 @@ public class Rotation2d
    *
    * @return This object (modified).
    */
-  public Rotation2d unaryMinus() {
+  public Rotation2dDemacia unaryMinus() {
     m_value = -m_value;
     m_sin = -m_sin;
     return this;
@@ -224,7 +333,7 @@ public class Rotation2d
    * @param scalar The scalar.
    * @return This object (modified).
    */
-  public Rotation2d times(double scalar) {
+  public Rotation2dDemacia times(double scalar) {
     m_value = m_value * scalar;
     m_cos = Math.cos(m_value * scalar);
     m_sin = Math.sin(m_value * scalar);
@@ -238,7 +347,7 @@ public class Rotation2d
    * @param scalar The scalar.
    * @return This object (modified).
    */
-  public Rotation2d div(double scalar) {
+  public Rotation2dDemacia div(double scalar) {
     return times(1.0 / scalar);
   }
 
@@ -257,9 +366,41 @@ public class Rotation2d
    * @param other The rotation to rotate by.
    * @return This object (modified).
    */
-  public Rotation2d rotateBy(Rotation2d other) {
+  public Rotation2dDemacia rotateBy(Rotation2dDemacia other) {
     double x = m_cos * other.m_cos - m_sin * other.m_sin;
     double y = m_cos * other.m_sin + m_sin * other.m_cos;
+    double magnitude = Math.hypot(x, y);
+    if (magnitude > 1e-6) {
+      m_cos = x / magnitude;
+      m_sin = y / magnitude;
+    } else {
+      m_cos = 1.0;
+      m_sin = 0.0;
+      MathSharedStore.reportError(
+          "x and y components of Rotation2d are zero\n", Thread.currentThread().getStackTrace());
+    }
+    m_value = Math.atan2(m_sin, m_cos);
+    return this;
+  }
+
+  /**
+   * Adds the new rotation to the current rotation using a rotation matrix.
+   * <b>Modifies this object.</b>
+   *
+   * <p>The matrix multiplication is as follows:
+   *
+   * <pre>
+   * [cos_new]   [other.cos, -other.sin][cos]
+   * [sin_new] = [other.sin,  other.cos][sin]
+   * value_new = atan2(sin_new, cos_new)
+   * </pre>
+   *
+   * @param other The rotation to rotate by.
+   * @return This object (modified).
+   */
+  public Rotation2dDemacia rotateBy(Rotation2d other) {
+    double x = m_cos * other.getCos() - m_sin * other.getSin();
+    double y = m_cos * other.getSin() + m_sin * other.getCos();
     double magnitude = Math.hypot(x, y);
     if (magnitude > 1e-6) {
       m_cos = x / magnitude;
@@ -365,7 +506,7 @@ public class Rotation2d
    */
   @Override
   public boolean equals(Object obj) {
-    return obj instanceof Rotation2d other
+    return obj instanceof Rotation2dDemacia other
         && Math.hypot(m_cos - other.m_cos, m_sin - other.m_sin) < 1E-9;
   }
 
@@ -375,8 +516,14 @@ public class Rotation2d
   }
 
   @Override
-  public Rotation2d interpolate(Rotation2d endValue, double t) {
-    return new Rotation2d(m_value).plus(((new Rotation2d(endValue.m_value)).minus(this).times(MathUtil.clamp(t, 0, 1))));
+  public Rotation2dDemacia interpolate(Rotation2dDemacia endValue, double t) {
+    double diff = MathUtil.angleModulus(endValue.m_value - this.m_value);
+    setRadians(this.m_value + (diff * MathUtil.clamp(t, 0.0, 1.0)));
+    return this;
+  }
+
+  public Rotation2d getRotation2d() {
+    return new Rotation2d(m_value);
   }
 
   /** Rotation2d protobuf for serialization. */

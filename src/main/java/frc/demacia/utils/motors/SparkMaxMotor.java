@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.demacia.utils.log.LogManager;
 import frc.demacia.utils.log.LogEntryBuilder.LogLevel;
@@ -53,7 +54,7 @@ public class SparkMaxMotor extends SparkMax implements MotorInterface {
     configMotor();
     addLog();
     setName(name);
-    SmartDashboard.putData(name, this);
+    // SmartDashboard.putData(name, this);
     LogManager.log(name + " motor initialized");
   }
 
@@ -200,7 +201,7 @@ public class SparkMaxMotor extends SparkMax implements MotorInterface {
   }
 
   @Override
-  public void setVelocityWithAcceleratoin(double velocity, Supplier<Double> wantedAccelerationSupplier) {
+  public void setVelocityWithAcceleration(double velocity, Supplier<Double> wantedAccelerationSupplier) {
       setVelocity(velocity, wantedAccelerationSupplier.get() * config.pid[closedLoopSlot.value].kA());
   }
 
@@ -366,7 +367,7 @@ public class SparkMaxMotor extends SparkMax implements MotorInterface {
           value -> {
             if (value) {
               if (!configPidFf.isScheduled()) {
-                configPidFf.schedule();
+                CommandScheduler.getInstance().schedule(configPidFf);
               }
             } else {
               if (configPidFf.isScheduled()) {
@@ -404,7 +405,7 @@ public class SparkMaxMotor extends SparkMax implements MotorInterface {
         value -> {
           if (value) {
             if (!configMotionMagic.isScheduled()) {
-              configMotionMagic.schedule();
+              CommandScheduler.getInstance().schedule(configMotionMagic);
             }
           } else {
             if (configMotionMagic.isScheduled()) {

@@ -5,7 +5,7 @@ public class LedConstants {
   /**the size of every strip for every port */
   public static final int LENGTH = 14;
   /**the port of the leds */
-  public static final int PORT = 2;
+  public static final int PORT = 0;
 
   /**
    * the blink time between what is color and what is off <br></br>

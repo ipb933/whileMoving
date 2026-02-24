@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.demacia.utils.chassis.Chassis;
 
 import static frc.demacia.kinematics.KinematicsConstants.*;
 
@@ -69,74 +70,35 @@ public class DemaciaKinematics {
     public SwerveModuleState[] toSwerveModuleStatesWithLimit(ChassisSpeeds fieldRelWantedSpeeds,
             ChassisSpeeds fieldRelCurrentSpeeds, Rotation2d currentGyroAngle) {
 
-        ChassisSpeeds limitedWantedVel = limitVelocities(fieldRelWantedSpeeds, fieldRelCurrentSpeeds);
+        if (isOnlyRotating(fieldRelWantedSpeeds)) {
+            return onlyRotate(fieldRelWantedSpeeds);
+        }
+        if (isTooFastForLimit(fieldRelWantedSpeeds))
+            return toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(fieldRelCurrentSpeeds, currentGyroAngle));
+        ChassisSpeeds limitedWantedVel = KinematicsUtilities.Limits.limitVelocities(fieldRelWantedSpeeds, fieldRelCurrentSpeeds);
         limitedWantedVel = ChassisSpeeds.fromFieldRelativeSpeeds(limitedWantedVel, currentGyroAngle);
         swerveStates = toSwerveModuleStates(limitedWantedVel);
         return swerveStates;
     }
 
-    private ChassisSpeeds chassisFromRest(double currentV, double wantedV, ChassisSpeeds wantedSpeeds) {
-
-        if (wantedV < MIN_VELOCITY) { // target is standing
-            return new ChassisSpeeds(0, 0, wantedSpeeds.omegaRadiansPerSecond);
-        } else { // target is moving
-            // we are moving to the required heading and accelerating, no radial limit
-            double ratio = MathUtil.clamp(wantedV, currentV, currentV + MAX_DELTA_V) / wantedV;
-            return new ChassisSpeeds(wantedSpeeds.vxMetersPerSecond * ratio, wantedSpeeds.vyMetersPerSecond * ratio,
-                    wantedSpeeds.omegaRadiansPerSecond);
-        }
+    private boolean isTooFastForLimit(ChassisSpeeds wantedSpeeds) {
+        return ((Math.abs(wantedSpeeds.vxMetersPerSecond) > 1.5 || Math.abs(wantedSpeeds.vyMetersPerSecond) > 1.5)
+                && Math.abs(wantedSpeeds.omegaRadiansPerSecond) > Math.toRadians(40));
     }
 
-    private double optimizeAngleChange(double alpha) {
-        return alpha > MIN_REVERSE_ANGLE ? alpha - Math.PI : alpha + Math.PI;
-
+    private boolean isOnlyRotating(ChassisSpeeds speeds) {
+        return Math.abs(speeds.vxMetersPerSecond) < 0.01 && Math.abs(speeds.vyMetersPerSecond) < 0.01
+                && Math.abs(speeds.omegaRadiansPerSecond) > 0.01;
     }
 
-    private ChassisSpeeds limitVelocities(ChassisSpeeds wantedSpeeds, ChassisSpeeds currentSpeeds) {
-        double currentVelocity = Math.hypot(currentSpeeds.vxMetersPerSecond, currentSpeeds.vyMetersPerSecond);
-        double wantedVelocity = Math.hypot(wantedSpeeds.vxMetersPerSecond, wantedSpeeds.vyMetersPerSecond);
-
-        if (currentVelocity < MIN_VELOCITY) { // we are standing
-            return chassisFromRest(currentVelocity, wantedVelocity, wantedSpeeds);
+    private SwerveModuleState[] onlyRotate(ChassisSpeeds speeds) {
+        SwerveModuleState[] rotationStates = new SwerveModuleState[4];
+        for (int i = 0; i < 4; i++) {
+            rotationStates[i] = new SwerveModuleState(
+                    speeds.omegaRadiansPerSecond * modulePositionOnTheRobot[i].getNorm(),
+                    modulePositionOnTheRobot[i].getAngle().plus(Rotation2d.kCW_90deg));
         }
-
-        if (wantedVelocity < MIN_VELOCITY) { // target is stop
-            // just deaccelrate to stop
-            double ratio = Math.max(currentVelocity - MAX_DELTA_V, wantedVelocity) / currentVelocity;
-            return new ChassisSpeeds(currentSpeeds.vxMetersPerSecond * ratio, currentSpeeds.vyMetersPerSecond * ratio,
-                    wantedSpeeds.omegaRadiansPerSecond);
-        }
-        // we are moving and target is moving
-        double currentVelocityHeading = Math.atan2(currentSpeeds.vyMetersPerSecond, currentSpeeds.vxMetersPerSecond);
-        double targetVelocityHeading = Math.atan2(wantedSpeeds.vyMetersPerSecond, wantedSpeeds.vxMetersPerSecond);
-        double velocityHeadingDiff = MathUtil.angleModulus(targetVelocityHeading - currentVelocityHeading);
-        double targetVelocity = wantedVelocity;
-
-        if (Math.abs(velocityHeadingDiff) < MAX_FAST_TURN_ANGLE) { // small heading change
-            // accelerate to target v
-            targetVelocity = MathUtil.clamp(targetVelocity, currentVelocity - MAX_DELTA_V, currentVelocity + MAX_DELTA_V);
-        } else if (Math.abs(velocityHeadingDiff) > MIN_REVERSE_ANGLE) { // optimization - deaccdelerate and turn the other way
-
-            targetVelocity = currentVelocity - MAX_DELTA_V;
-            velocityHeadingDiff = optimizeAngleChange(velocityHeadingDiff);
-
-        } else {
-            targetVelocity = MathUtil.clamp(Math.min(MAX_ROTATION_VELOCITY, targetVelocity), currentVelocity - MAX_DELTA_V, currentVelocity + MAX_DELTA_V);
-        }
-
-        if (targetVelocity < MIN_VELOCITY) {
-            return new ChassisSpeeds(0, 0, wantedSpeeds.omegaRadiansPerSecond);
-        }
-        // calculate the maximum heading change using the target velocity and allowed
-        // radial acceleration
-        double maxAngleChange = (MAX_RADIAL_ACCEL / targetVelocity) * CYCLE_DT;
-        // set the target angle
-        velocityHeadingDiff = MathUtil.clamp(velocityHeadingDiff, -maxAngleChange, maxAngleChange);
-        targetVelocityHeading = currentVelocityHeading + velocityHeadingDiff;
-
-        // return the speeds - using target velocity and target angle
-        return new ChassisSpeeds(targetVelocity * Math.cos(targetVelocityHeading), targetVelocity * Math.sin(targetVelocityHeading),
-                wantedSpeeds.omegaRadiansPerSecond);
+        return rotationStates;
     }
 
     public ChassisSpeeds toChassisSpeeds(SwerveModuleState[] swerveStates, double omegaFromGyro) {
