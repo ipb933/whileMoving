@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.turret;
+package frc.robot.turret.subsystems;
 
 import static frc.robot.turret.TurretConstants.*;
 
@@ -18,6 +18,7 @@ import frc.demacia.utils.sensors.LimitSwitch;
 import frc.demacia.vision.TagPose;
 import frc.robot.Field;
 import frc.robot.Field.Red;
+import frc.robot.turret.TurretConstants;
 
 public class Turret extends SubsystemBase {
   private static Turret instance;

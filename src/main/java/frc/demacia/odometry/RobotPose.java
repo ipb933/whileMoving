@@ -31,7 +31,7 @@ import frc.demacia.vision.subsystem.Quest;
 import frc.demacia.vision.utils.Vision;
 import frc.demacia.vision.utils.VisionConstants;
 import frc.robot.RobotCommon;
-import frc.robot.turret.Turret;
+import frc.robot.turret.subsystems.Turret;
 
 /** Add your docs here. */
 public class RobotPose {

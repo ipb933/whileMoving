@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.demacia.utils.log.LogEntryBuilder.LogLevel;
 import frc.robot.RobotCommon;
-import frc.robot.turret.Turret;
+import frc.robot.turret.subsystems.Turret;
 import frc.demacia.utils.log.LogManager;
 
 import static frc.demacia.vision.utils.VisionConstants.*;

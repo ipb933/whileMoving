@@ -5,7 +5,7 @@ import frc.demacia.utils.chassis.Chassis;
 import frc.robot.intake.subsystems.IntakeSubsystem;
 import frc.robot.intake.subsystems.ShinuaSubsystem;
 import frc.robot.shooter.subsystem.Shooter;
-import frc.robot.turret.Turret;
+import frc.robot.turret.subsystems.Turret;
 
 public class SetRobotNeutralMode extends Command {
     private final Chassis chassis;

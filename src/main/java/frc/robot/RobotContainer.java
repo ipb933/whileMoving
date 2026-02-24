@@ -57,11 +57,11 @@ import frc.robot.shooter.commands.HoodTesting;
 import frc.robot.shooter.commands.ShooterCommand;
 import frc.robot.shooter.commands.ShooterTesting;
 import frc.robot.shooter.subsystem.Shooter;
-import frc.robot.turret.Turret;
-import frc.robot.turret.TurretCommands.TurretCalibration;
-import frc.robot.turret.TurretCommands.TurretCommand;
-import frc.robot.turret.TurretCommands.TurretFollow;
-import frc.robot.turret.TurretCommands.TurretPower;
+import frc.robot.turret.commands.TurretCalibration;
+import frc.robot.turret.commands.TurretCommand;
+import frc.robot.turret.commands.TurretFollow;
+import frc.robot.turret.commands.TurretPower;
+import frc.robot.turret.subsystems.Turret;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
